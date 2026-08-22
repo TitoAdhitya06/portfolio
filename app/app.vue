@@ -111,11 +111,13 @@
           >
             View Projects
           </a>
-          <button
+          <a
+            href="/CV_Tito_Adhitya_Pratama.pdf"
+            target="_blank"
             class="w-full sm:w-auto px-8 py-3 bg-slate-800 hover:bg-slate-700 text-white font-semibold rounded-xl border border-slate-600 transition-all duration-300 shadow-lg hover:-translate-y-1"
           >
             Download CV
-          </button>
+          </a>
         </div>
       </div>
     </section>
