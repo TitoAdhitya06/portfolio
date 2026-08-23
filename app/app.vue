@@ -52,7 +52,7 @@
     ></div>
 
     <!-- =========================
-         1. HERO SECTION 
+         Hero Section 
          ========================= -->
     <section
       class="min-h-screen flex items-center justify-center p-6 sm:p-12 relative z-10"
@@ -243,7 +243,7 @@
     </div>
 
     <!-- ==========================================
-         2. PROJECTS GALLERY SECTION
+         Projects Section
          ========================================== -->
     <section
       id="projects"
@@ -329,9 +329,9 @@
       ></div>
     </div>
 
-    <!-- ==========================================
-         4. CONTACT SECTION
-         ========================================== -->
+    <!-- =============================
+         Contact Section
+         ============================= -->
     <section
       id="contact"
       class="reveal py-24 px-6 sm:px-12 max-w-3xl mx-auto relative z-10 text-center"
@@ -349,14 +349,14 @@
         my inbox is always open. I'll try my best to get back to you!
       </p>
 
-      <!-- BUNGKUS TOMBOL KONTAK (Diubah menjadi flex-wrap agar tidak sempit jika layarnya kecil) -->
+      <!-- Contact Button -->
       <div
         class="flex flex-col sm:flex-row flex-wrap justify-center gap-4 sm:gap-6"
       >
-        <!-- Tombol Email (Copy to Clipboard) -->
+        <!-- Email Button -->
         <button
           @click="copyEmail"
-          class="flex items-center justify-center gap-3 px-8 py-4 bg-slate-900/80 backdrop-blur-sm border border-slate-700 hover:border-cyan-400 hover:bg-cyan-500 text-slate-300 hover:text-slate-900 rounded-2xl transition-all duration-300 group shadow-lg hover:shadow-[0_0_20px_rgba(34,211,238,0.5)] hover:-translate-y-1 w-full sm:w-auto min-w-[180px]"
+          class="flex items-center justify-center gap-3 px-8 py-4 bg-slate-900/80 backdrop-blur-sm border border-slate-700 hover:border-[#EA4335] hover:bg-[#EA4335]/20 text-slate-300 hover:text-[#EA4335] rounded-2xl transition-all duration-300 group shadow-lg hover:shadow-[0_0_20px_rgba(234,67,53,0.3)] hover:-translate-y-1 w-full sm:w-auto min-w-[180px]"
         >
           <svg
             v-if="!emailCopied"
@@ -398,14 +398,13 @@
           </span>
         </button>
 
-        <!-- Tombol WhatsApp -->
+        <!-- WhatsApp Button -->
         <a
           href="https://wa.me/6281318190212"
           target="_blank"
           rel="noopener noreferrer"
           class="flex items-center justify-center gap-3 px-8 py-4 bg-slate-900/80 backdrop-blur-sm border border-slate-700 hover:border-green-400 hover:bg-green-500/20 text-slate-300 hover:text-green-400 rounded-2xl transition-all duration-300 group shadow-lg hover:shadow-[0_0_20px_rgba(74,222,128,0.3)] hover:-translate-y-1 w-full sm:w-auto min-w-[180px]"
         >
-          <!-- Ikon WhatsApp Asli -->
           <svg
             xmlns="http://www.w3.org/2000/svg"
             class="h-6 w-6 group-hover:animate-bounce"
@@ -419,12 +418,12 @@
           <span class="font-bold text-lg">WhatsApp</span>
         </a>
 
-        <!-- Tombol LinkedIn -->
+        <!-- LinkedIn Button -->
         <a
           href="https://www.linkedin.com/in/titoadhityapratama"
           target="_blank"
           rel="noopener noreferrer"
-          class="flex items-center justify-center gap-3 px-8 py-4 bg-slate-900/80 backdrop-blur-sm border border-slate-700 hover:border-cyan-400 hover:bg-cyan-500 text-slate-300 hover:text-slate-900 rounded-2xl transition-all duration-300 group shadow-lg hover:shadow-[0_0_20px_rgba(34,211,238,0.5)] hover:-translate-y-1 w-full sm:w-auto min-w-[180px]"
+          class="flex items-center justify-center gap-3 px-8 py-4 bg-slate-900/80 backdrop-blur-sm border border-slate-700 hover:border-[#0A66C2] hover:bg-[#0A66C2]/20 text-slate-300 hover:text-[#0A66C2] rounded-2xl transition-all duration-300 group shadow-lg hover:shadow-[0_0_20px_rgba(10,102,194,0.3)] hover:-translate-y-1 w-full sm:w-auto min-w-[180px]"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -441,9 +440,9 @@
       </div>
     </section>
 
-    <!-- ==========================================
-         5. FOOTER
-         ========================================== -->
+    <!-- ==================
+         Footer
+         ================== -->
     <footer
       class="py-8 text-center border-t border-slate-800/50 relative z-10 mt-12 bg-slate-950/20 backdrop-blur-md"
     >
@@ -478,7 +477,7 @@
     </footer>
 
     <!-- ==========================================
-         SCROLL TO TOP BUTTON
+         Scroll To Top Button
          ========================================== -->
     <Transition name="fade-up">
       <button
@@ -487,7 +486,6 @@
         class="fixed bottom-8 right-8 z-50 p-4 bg-cyan-500 hover:bg-cyan-400 text-slate-900 rounded-full shadow-[0_0_15px_rgba(34,211,238,0.5)] hover:shadow-[0_0_25px_rgba(34,211,238,0.8)] transition-all duration-300 hover:-translate-y-2 group"
         aria-label="Scroll to top"
       >
-        <!-- Ikon Panah ke Atas dengan efek memantul -->
         <svg
           xmlns="http://www.w3.org/2000/svg"
           class="h-6 w-6 group-hover:animate-bounce"
@@ -517,7 +515,7 @@
         v-if="selectedProject"
         class="bg-slate-900 border border-slate-700 rounded-3xl w-full max-w-4xl max-h-[90vh] overflow-y-auto shadow-2xl relative flex flex-col animate-fadeIn"
       >
-        <!-- Tombol Tutup (X) -->
+        <!-- Close Button -->
         <button
           @click="closeModal"
           class="absolute top-4 right-4 z-10 p-2 bg-slate-800/80 hover:bg-red-500 text-white rounded-full backdrop-blur-sm transition-colors duration-300"
@@ -538,7 +536,7 @@
           </svg>
         </button>
 
-        <!-- Gambar Modal -->
+        <!-- Modal Image -->
         <div class="w-full h-64 sm:h-80 lg:h-96 shrink-0 relative group">
           <img
             :src="selectedProject.gallery[currentImageIndex]"
@@ -716,7 +714,6 @@ useHead({
       content:
         "Portfolio of Tito Adhitya Pratama, a Front-End Developer based in West Jakarta specializing in Vue.js and Tailwind CSS.",
     },
-    // Open Graph (Untuk Preview di WhatsApp, LinkedIn, Facebook)
     {
       property: "og:title",
       content: "Tito Adhitya Pratama | Front-End Developer",
@@ -726,9 +723,8 @@ useHead({
       content:
         "Explore my projects, skills, and experience in building modern, responsive web interfaces.",
     },
-    { property: "og:image", content: "/images/preview.png" }, // Pastikan gambar ini ada di folder public/images
+    { property: "og:image", content: "/images/preview.png" },
     { property: "og:type", content: "website" },
-    // Twitter Card
     { name: "twitter:card", content: "summary_large_image" },
     {
       name: "twitter:title",
@@ -781,8 +777,8 @@ interface Project {
   id: number;
   title: string;
   category: string;
-  image: string; // Gambar sampul (Grid)
-  gallery: string[]; // BARU: Kumpulan gambar untuk slider di dalam Modal
+  image: string;
+  gallery: string[];
   description: string;
   techStack: string[];
   demoUrl?: string;
@@ -792,7 +788,6 @@ interface Project {
 const isModalOpen = ref(false);
 const selectedProject = ref<Project | null>(null);
 
-// BARU: State untuk melacak gambar ke-berapa yang sedang dilihat
 const currentImageIndex = ref(0);
 
 const projects = ref<Project[]>([
@@ -801,7 +796,6 @@ const projects = ref<Project[]>([
     title: "DapurGo",
     category: "Internal Web System",
     image: "/images/dapurgo-1.png",
-    // Masukkan semua nama file gambar proyek ini ke dalam array gallery
     gallery: [
       "/images/dapurgo-1.png",
       "/images/dapurgo-2.png",
@@ -832,10 +826,10 @@ const projects = ref<Project[]>([
   },
 ]);
 
-// Fungsi Buka Modal (Diperbarui agar index gambar kembali ke 0 setiap dibuka)
+// Fungsi Buka Modal
 const openModal = (project: Project) => {
   selectedProject.value = project;
-  currentImageIndex.value = 0; // Reset ke gambar pertama
+  currentImageIndex.value = 0;
   isModalOpen.value = true;
   document.body.style.overflow = "hidden";
 };
@@ -849,7 +843,7 @@ const closeModal = () => {
   document.body.style.overflow = "auto";
 };
 
-// BARU: Fungsi untuk menggeser gambar (Next & Prev)
+// Fungsi geser gambar (Next & Prev)
 const nextImage = () => {
   if (selectedProject.value) {
     currentImageIndex.value =
@@ -870,11 +864,9 @@ const emailCopied = ref(false);
 
 const copyEmail = async () => {
   try {
-    // Perintah untuk menyalin teks ke clipboard perangkat
     await navigator.clipboard.writeText("tapwrk1@gmail.com");
     emailCopied.value = true;
 
-    // Kembalikan tombol ke keadaan semula setelah 2 detik
     setTimeout(() => {
       emailCopied.value = false;
     }, 2000);
@@ -887,7 +879,6 @@ const copyEmail = async () => {
 const showScrollTop = ref(false);
 
 const checkScroll = () => {
-  // Tombol akan muncul jika layar digulir lebih dari 400 pixel ke bawah
   showScrollTop.value = window.scrollY > 400;
 };
 
@@ -908,23 +899,17 @@ onMounted(() => {
     (entries) => {
       entries.forEach((entry) => {
         if (entry.isIntersecting) {
-          // Tambahkan kelas 'active' saat elemen masuk ke layar
           entry.target.classList.add("active");
-
-          // (Opsional) Jika ingin animasinya hanya terjadi sekali, aktifkan kode di bawah:
-          // revealObserver.unobserve(entry.target);
         } else {
-          // Hapus kelas 'active' jika elemen keluar layar (agar bisa diulang saat scroll naik turun)
           entry.target.classList.remove("active");
         }
       });
     },
     {
-      threshold: 0.15, // Animasi terpicu saat 15% bagian elemen sudah terlihat di layar
+      threshold: 0.15,
     },
   );
 
-  // Cari semua elemen HTML yang memiliki kelas 'reveal' lalu pantau
   document.querySelectorAll(".reveal").forEach((el) => {
     revealObserver.observe(el);
   });
@@ -954,7 +939,7 @@ html {
   }
 }
 
-/* Animasi Muncul Halus untuk Modal */
+/* Animasi Muncul untuk Modal */
 .animate-fadeIn {
   animation: fadeIn 0.3s ease-out forwards;
 }
@@ -970,7 +955,7 @@ html {
   }
 }
 
-/* Transisi Halus untuk Tombol Scroll to Top */
+/* Transisi untuk Tombol Scroll to Top */
 .fade-up-enter-active,
 .fade-up-leave-active {
   transition:
@@ -984,21 +969,19 @@ html {
   transform: translateY(20px);
 }
 
-/* --- ANIMASI SCROLL REVEAL --- */
-/* Kondisi Awal: Transparan dan turun 40px ke bawah */
+/* --- ANIMASI SCROLL --- */
+
 .reveal {
   opacity: 0;
   transform: translateY(40px);
   transition: all 0.8s cubic-bezier(0.5, 0, 0, 1);
 }
 
-/* Kondisi Aktif: Jelas dan kembali ke posisi semula */
 .reveal.active {
   opacity: 1;
   transform: translateY(0);
 }
 
-/* Tambahan: Memberikan jeda (delay) jika ada elemen yang berjejer agar munculnya bergantian */
 .delay-100 {
   transition-delay: 100ms;
 }
