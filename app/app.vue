@@ -1,6 +1,6 @@
 <template>
   <!-- Background -->
-  <div
+  <main
     class="bg-animated min-h-screen text-white font-sans overflow-x-hidden relative selection:bg-cyan-400 selection:text-slate-900"
   >
     <!-- ===========
@@ -700,7 +700,7 @@
         </div>
       </div>
     </div>
-  </div>
+  </main>
 </template>
 
 <script setup lang="ts">
