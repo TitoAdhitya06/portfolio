@@ -26,6 +26,7 @@
             v-for="item in navItems"
             :key="item.id"
             :href="`#${item.id}`"
+            @click="setActive(item.id)"
             class="px-3.5 py-2 text-sm font-medium rounded-md transition-colors duration-150"
             :class="activeSection === item.id ? 'text-primary-600 font-semibold bg-primary-50' : 'text-text-secondary hover:bg-surface-muted hover:text-text-primary'"
           >
@@ -55,6 +56,7 @@
           <!-- Get in Touch CTA (Desktop / Tablet) -->
           <a
             href="#contact"
+            @click="setActive('contact')"
             class="hidden sm:inline-flex items-center gap-1.5 h-9 px-4 rounded-md bg-primary-600 text-white text-sm font-semibold hover:bg-primary-700 active:scale-95 transition-all duration-150 shadow-sm"
           >
             <span>Get in touch</span>
@@ -94,7 +96,7 @@
             v-for="item in navItems"
             :key="item.id"
             :href="`#${item.id}`"
-            @click="isMobileMenuOpen = false"
+            @click="setActive(item.id)"
             class="px-3.5 py-2.5 text-sm font-medium rounded-md transition-colors duration-150 flex items-center justify-between"
             :class="activeSection === item.id ? 'text-primary-600 font-semibold bg-primary-50' : 'text-text-secondary hover:bg-surface-muted hover:text-text-primary'"
           >
@@ -107,7 +109,7 @@
           <div class="pt-2 mt-1 border-t border-border">
             <a
               href="#contact"
-              @click="isMobileMenuOpen = false"
+              @click="setActive('contact')"
               class="w-full flex items-center justify-center gap-2 h-9 px-4 rounded-md bg-primary-600 text-white text-sm font-semibold hover:bg-primary-700 active:scale-95 transition-all duration-150 shadow-sm"
             >
               <span>Get in touch</span>
@@ -289,7 +291,7 @@
       <!-- ============================================================
            2. Featured Projects (Horizontal Split Cards)
            ============================================================ -->
-      <section id="projects" class="py-16 sm:py-20 border-t border-border">
+      <section id="projects" class="py-16 sm:py-20 border-t border-border scroll-mt-16">
         <!-- Section Header -->
         <div class="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-4 reveal-item">
           <div>
@@ -395,7 +397,7 @@
       <!-- ============================================================
            3. Technical Stack & Capabilities (4-Pillar Grid)
            ============================================================ -->
-      <section id="skills" class="py-16 sm:py-20 border-t border-border">
+      <section id="skills" class="py-16 sm:py-20 border-t border-border scroll-mt-16">
         <div class="mb-10 reveal-item">
           <div class="inline-flex items-center gap-1.5 text-primary-600 text-xs font-bold uppercase tracking-wider mb-2">
             <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
@@ -505,10 +507,10 @@
       <!-- ============================================================
            4. Experience & Background (Structured Split Layout)
            ============================================================ -->
-      <section id="experience" class="py-16 sm:py-20 border-t border-border">
+      <section class="py-16 sm:py-20 border-t border-border">
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
-          <!-- Left: Career Milestones & Education (7 Cols) -->
-          <div class="lg:col-span-7 flex flex-col gap-6">
+          <!-- Left: Career Milestones & Education (7 Cols, ID: experience) -->
+          <div id="experience" class="lg:col-span-7 flex flex-col gap-6 scroll-mt-24">
             <div class="reveal-item">
               <div class="inline-flex items-center gap-1.5 text-primary-600 text-xs font-bold uppercase tracking-wider mb-2">
                 <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
@@ -578,50 +580,53 @@
           </div>
 
           <!-- Right: About Me & Contact Hook (5 Cols) -->
-          <div class="lg:col-span-5 flex flex-col gap-6" id="about">
-            <div class="reveal-item">
-              <div class="inline-flex items-center gap-1.5 text-primary-600 text-xs font-bold uppercase tracking-wider mb-2">
-                <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path>
-                  <circle cx="12" cy="7" r="4"></circle>
-                </svg>
-                <span>Personal background</span>
-              </div>
-              <h2 class="text-2xl sm:text-3xl font-bold text-text-primary tracking-tight">About me</h2>
-            </div>
-
-            <!-- Bio Card -->
-            <div class="bg-surface-card border border-border rounded-xl p-6 shadow-sm flex flex-col gap-4 text-sm text-text-secondary leading-relaxed reveal-item">
-              <p>
-                I build web applications with clear typography, intuitive navigation, and fast interactions. I studied computer engineering education at State University of Jakarta and enjoy turning user requirements into dependable software.
-              </p>
-              <p>
-                Comfortable working in cross-functional teams with Git workflows, agile sprints, and RESTful API integrations. Quick to learn new technologies and focused on building accessible user interfaces.
-              </p>
-
-              <!-- Soft Skills & Languages (From CV) -->
-              <div class="p-3.5 bg-surface-muted rounded-lg border border-border flex flex-col gap-2">
-                <span class="text-xs font-bold uppercase tracking-wider text-text-primary">Soft skills and languages</span>
-                <p class="text-xs text-text-secondary">
-                  <strong>Soft skills:</strong> Analytical Thinking, Problem Solving, Team Collaboration, Adaptability.
-                </p>
-                <p class="text-xs text-text-secondary">
-                  <strong>Languages:</strong> Indonesian (native), English (intermediate).
-                </p>
+          <div class="lg:col-span-5 flex flex-col gap-8">
+            <!-- About Section (ID: about) -->
+            <div id="about" class="flex flex-col gap-6 scroll-mt-24">
+              <div class="reveal-item">
+                <div class="inline-flex items-center gap-1.5 text-primary-600 text-xs font-bold uppercase tracking-wider mb-2">
+                  <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="12" cy="7" r="4"></circle>
+                  </svg>
+                  <span>Personal background</span>
+                </div>
+                <h2 class="text-2xl sm:text-3xl font-bold text-text-primary tracking-tight">About me</h2>
               </div>
 
-              <!-- Location Tag -->
-              <div class="flex items-center gap-2 text-xs font-medium text-text-secondary">
-                <svg class="w-4 h-4 text-primary-600 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"></path>
-                  <circle cx="12" cy="10" r="3"></circle>
-                </svg>
-                <span>Jakarta Barat, DKI Jakarta, Indonesia (UTC+7)</span>
+              <!-- Bio Card -->
+              <div class="bg-surface-card border border-border rounded-xl p-6 shadow-sm flex flex-col gap-4 text-sm text-text-secondary leading-relaxed reveal-item">
+                <p>
+                  I build web applications with clear typography, intuitive navigation, and fast interactions. I studied computer engineering education at State University of Jakarta and enjoy turning user requirements into dependable software.
+                </p>
+                <p>
+                  Comfortable working in cross-functional teams with Git workflows, agile sprints, and RESTful API integrations. Quick to learn new technologies and focused on building accessible user interfaces.
+                </p>
+
+                <!-- Soft Skills & Languages (From CV) -->
+                <div class="p-3.5 bg-surface-muted rounded-lg border border-border flex flex-col gap-2">
+                  <span class="text-xs font-bold uppercase tracking-wider text-text-primary">Soft skills and languages</span>
+                  <p class="text-xs text-text-secondary">
+                    <strong>Soft skills:</strong> Analytical Thinking, Problem Solving, Team Collaboration, Adaptability.
+                  </p>
+                  <p class="text-xs text-text-secondary">
+                    <strong>Languages:</strong> Indonesian (native), English (intermediate).
+                  </p>
+                </div>
+
+                <!-- Location Tag -->
+                <div class="flex items-center gap-2 text-xs font-medium text-text-secondary">
+                  <svg class="w-4 h-4 text-primary-600 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"></path>
+                    <circle cx="12" cy="10" r="3"></circle>
+                  </svg>
+                  <span>Jakarta Barat, DKI Jakarta, Indonesia (UTC+7)</span>
+                </div>
               </div>
             </div>
 
             <!-- Contact Box (ID: contact) -->
-            <div id="contact" class="bg-surface-muted border border-border rounded-xl p-6 shadow-sm flex flex-col gap-4 reveal-item">
+            <div id="contact" class="bg-surface-muted border border-border rounded-xl p-6 shadow-sm flex flex-col gap-4 reveal-item scroll-mt-24">
               <div class="flex items-center justify-between">
                 <h3 class="text-base font-bold text-text-primary">Direct communication</h3>
                 <span class="px-2 py-0.5 rounded text-[11px] font-semibold bg-success-50 text-success-600 border border-success-500/20">
@@ -997,23 +1002,49 @@ const applyTheme = () => {
 // --- Scroll State & Scrollspy ---
 const isScrolled = ref(false);
 const activeSection = ref("projects");
+let isManualNav = false;
+let manualNavTimer: any = null;
+
+const setActive = (id: string) => {
+  activeSection.value = id;
+  isMobileMenuOpen.value = false;
+  isManualNav = true;
+  if (manualNavTimer) clearTimeout(manualNavTimer);
+  manualNavTimer = setTimeout(() => {
+    isManualNav = false;
+  }, 900);
+};
 
 const onScroll = () => {
   isScrolled.value = window.scrollY > 20;
 
-  const sectionIds = ["projects", "skills", "experience", "about", "contact"];
-  let current = "projects";
+  if (isManualNav) return;
+
+  // When reached or close to bottom of page, always mark contact as active
+  const scrollPosition = window.scrollY + window.innerHeight;
+  const documentHeight = document.documentElement.scrollHeight;
+  if (scrollPosition >= documentHeight - 60) {
+    activeSection.value = "contact";
+    return;
+  }
+
+  // Scan in reverse order: contact -> about -> experience -> skills -> projects
+  const sectionIds = ["contact", "about", "experience", "skills", "projects"];
+  let matched = false;
   for (const id of sectionIds) {
     const el = document.getElementById(id);
     if (el) {
       const rect = el.getBoundingClientRect();
-      if (rect.top <= 140 && rect.bottom >= 140) {
-        current = id;
+      if (rect.top <= 180) {
+        activeSection.value = id;
+        matched = true;
         break;
       }
     }
   }
-  activeSection.value = current;
+  if (!matched) {
+    activeSection.value = "projects";
+  }
 };
 
 // --- Mobile Menu State ---
