@@ -1,938 +1,911 @@
 <template>
-  <main
-    class="bg-animated min-h-screen font-sans overflow-x-hidden relative selection:bg-violet-400 selection:text-white dark:text-white text-slate-800"
-  >
-    <!-- ===========
-           Navbar
-           =========== -->
-    <nav
-      class="fixed top-6 left-1/2 -translate-x-1/2 z-50 px-4 sm:px-8 py-3 rounded-full shadow-lg bg-white/70 border border-slate-200/80 dark:bg-slate-900/60 dark:border-slate-700/50 backdrop-blur-md transition-all duration-500"
+  <div class="min-h-screen bg-bg text-text-primary font-sans antialiased selection:bg-primary-100 selection:text-primary-800">
+    <!-- ============================================================
+         Header & Navigation
+         ============================================================ -->
+    <header
+      id="navbar"
+      class="sticky top-0 z-50 border-b transition-colors duration-200"
+      :class="isScrolled ? 'bg-surface-card border-border shadow-sm' : 'bg-bg border-border'"
     >
-      <ul
-        class="flex items-center gap-4 sm:gap-8 text-sm font-semibold text-slate-600 dark:text-slate-300"
-      >
-        <li>
+      <div class="max-w-[1180px] mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+        <!-- Brand / Identity -->
+        <a href="#" class="flex items-center gap-2.5 group focus:outline-none">
+          <span class="w-8 h-8 rounded bg-primary-600 text-white text-sm font-bold flex items-center justify-center tracking-tight transition-transform duration-150 group-hover:-translate-y-0.5">
+            TAP
+          </span>
+          <div class="flex flex-col">
+            <span class="text-base font-bold text-text-primary leading-tight">Tito A. Pratama</span>
+            <span class="text-[11px] font-semibold text-text-tertiary uppercase tracking-wider">Front-end developer</span>
+          </div>
+        </a>
+
+        <!-- Desktop Navigation Links -->
+        <nav class="hidden md:flex items-center gap-1.5">
           <a
-            href="#"
-            class="hover:text-violet-500 dark:hover:text-violet-400 transition-all duration-300"
-            >Home</a
+            v-for="item in navItems"
+            :key="item.id"
+            :href="`#${item.id}`"
+            class="px-3.5 py-2 text-sm font-medium rounded-md transition-colors duration-150"
+            :class="activeSection === item.id ? 'text-primary-600 font-semibold bg-primary-50' : 'text-text-secondary hover:bg-surface-muted hover:text-text-primary'"
           >
-        </li>
-        <li>
-          <a
-            href="#about"
-            class="hover:text-emerald-500 dark:hover:text-emerald-400 transition-colors duration-300"
-            >About</a
-          >
-        </li>
-        <li>
-          <a
-            href="#projects"
-            class="hover:text-violet-500 dark:hover:text-violet-400 transition-colors duration-300"
-            >Projects</a
-          >
-        </li>
-        <li>
-          <a
-            href="#contact"
-            class="hover:text-rose-500 dark:hover:text-rose-400 transition-colors duration-300"
-            >Contact</a
-          >
-        </li>
-        <!-- Dark Mode Toggle -->
-        <li>
+            {{ item.label }}
+          </a>
+        </nav>
+
+        <!-- Actions -->
+        <div class="flex items-center gap-2">
+          <!-- Theme Toggle -->
           <button
-            @click="toggleDark"
-            class="p-2 rounded-full transition-all duration-300 bg-slate-100 hover:bg-slate-200 text-amber-500 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-amber-400 hover:rotate-180 hover:scale-110"
-            :aria-label="
-              isDark ? 'Switch to light mode' : 'Switch to dark mode'
-            "
+            @click="toggleTheme"
+            class="w-9 h-9 rounded-md bg-surface-card border border-border flex items-center justify-center text-text-secondary hover:bg-surface-muted hover:text-text-primary hover:border-border-strong active:scale-95 transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-primary-500/40"
+            :aria-label="isDark ? 'Switch to light mode' : 'Switch to dark mode'"
           >
-            <!-- Sun Icon (shown in dark mode) -->
-            <svg
-              v-if="isDark"
-              xmlns="http://www.w3.org/2000/svg"
-              class="h-5 w-5"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"
-              />
+            <!-- Sun Icon -->
+            <svg v-if="isDark" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="4"></circle>
+              <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"></path>
             </svg>
-            <!-- Moon Icon (shown in light mode) -->
-            <svg
-              v-else
-              xmlns="http://www.w3.org/2000/svg"
-              class="h-5 w-5"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"
-              />
+            <!-- Moon Icon -->
+            <svg v-else class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path>
             </svg>
           </button>
-        </li>
-      </ul>
-    </nav>
 
-    <!-- Floating Background Blobs -->
-    <div
-      class="fixed top-10 left-10 sm:left-24 w-36 h-36 rounded-full mix-blend-multiply dark:mix-blend-screen blur-[80px] pointer-events-none z-0 animate-float bg-violet-300 dark:bg-violet-600 opacity-40 dark:opacity-60"
-    ></div>
-    <div
-      class="fixed top-1/3 right-10 sm:right-20 w-44 h-44 rounded-full mix-blend-multiply dark:mix-blend-screen blur-[90px] pointer-events-none z-0 animate-float-delayed bg-cyan-300 dark:bg-cyan-600 opacity-30 dark:opacity-50"
-    ></div>
-    <div
-      class="fixed bottom-20 left-1/4 w-32 h-32 rounded-full mix-blend-multiply dark:mix-blend-screen blur-[70px] pointer-events-none z-0 animate-float-slow bg-rose-300 dark:bg-rose-600 opacity-30 dark:opacity-40"
-    ></div>
-    <div
-      class="fixed bottom-10 right-1/4 w-40 h-40 rounded-full mix-blend-multiply dark:mix-blend-screen blur-[100px] pointer-events-none z-0 animate-float bg-amber-200 dark:bg-amber-600 opacity-30 dark:opacity-30"
-      style="animation-delay: 3s"
-    ></div>
-
-    <!-- =========================
-           Hero Section
-           ========================= -->
-    <section
-      class="min-h-screen flex items-center justify-center p-6 sm:p-12 relative z-10"
-    >
-      <div
-        class="relative max-w-4xl w-full flex flex-col items-center text-center space-y-8"
-      >
-        <div class="space-y-4">
-          <p
-            class="font-semibold tracking-widest uppercase text-sm md:text-base text-violet-500 dark:text-violet-400"
+          <!-- Get in Touch CTA (Desktop / Tablet) -->
+          <a
+            href="#contact"
+            class="hidden sm:inline-flex items-center gap-1.5 h-9 px-4 rounded-md bg-primary-600 text-white text-sm font-semibold hover:bg-primary-700 active:scale-95 transition-all duration-150 shadow-sm"
           >
-            Hello, my name
+            <span>Get in touch</span>
+            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="7" y1="17" x2="17" y2="7"></line>
+              <polyline points="7 7 17 7 17 17"></polyline>
+            </svg>
+          </a>
+
+          <!-- Mobile Hamburger Toggle -->
+          <button
+            @click="isMobileMenuOpen = !isMobileMenuOpen"
+            class="md:hidden w-9 h-9 rounded-md bg-surface-card border border-border flex items-center justify-center text-text-secondary hover:bg-surface-muted hover:text-text-primary hover:border-border-strong active:scale-95 transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-primary-500/40"
+            :aria-label="isMobileMenuOpen ? 'Close navigation menu' : 'Open navigation menu'"
+            :aria-expanded="isMobileMenuOpen"
+          >
+            <svg v-if="isMobileMenuOpen" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+            <svg v-else class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="4" y1="6" x2="20" y2="6"></line>
+              <line x1="4" y1="12" x2="20" y2="12"></line>
+              <line x1="4" y1="18" x2="20" y2="18"></line>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Mobile Navigation Drawer -->
+      <transition name="mobile-menu">
+        <div
+          v-if="isMobileMenuOpen"
+          class="md:hidden border-t border-border bg-surface-card px-4 pt-2 pb-4 shadow-md flex flex-col gap-1"
+        >
+          <a
+            v-for="item in navItems"
+            :key="item.id"
+            :href="`#${item.id}`"
+            @click="isMobileMenuOpen = false"
+            class="px-3.5 py-2.5 text-sm font-medium rounded-md transition-colors duration-150 flex items-center justify-between"
+            :class="activeSection === item.id ? 'text-primary-600 font-semibold bg-primary-50' : 'text-text-secondary hover:bg-surface-muted hover:text-text-primary'"
+          >
+            <span>{{ item.label }}</span>
+            <svg v-if="activeSection === item.id" class="w-4 h-4 text-primary-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+          </a>
+
+          <div class="pt-2 mt-1 border-t border-border">
+            <a
+              href="#contact"
+              @click="isMobileMenuOpen = false"
+              class="w-full flex items-center justify-center gap-2 h-9 px-4 rounded-md bg-primary-600 text-white text-sm font-semibold hover:bg-primary-700 active:scale-95 transition-all duration-150 shadow-sm"
+            >
+              <span>Get in touch</span>
+              <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="7" y1="17" x2="17" y2="7"></line>
+                <polyline points="7 7 17 7 17 17"></polyline>
+              </svg>
+            </a>
+          </div>
+        </div>
+      </transition>
+    </header>
+
+    <main class="max-w-[1180px] mx-auto px-4 sm:px-6">
+      <!-- ============================================================
+           1. Hero Section (Asymmetric Spec Card Layout)
+           ============================================================ -->
+      <section id="hero" class="pt-12 sm:pt-20 pb-16 sm:pb-24">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-center">
+          <!-- Left Column (Bio & Actions) -->
+          <div class="lg:col-span-7 flex flex-col gap-5">
+            <!-- Availability Pill -->
+            <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-surface-card border border-border shadow-sm w-fit animate-hero-1">
+              <span class="w-2 h-2 rounded-full bg-success-500"></span>
+              <span class="text-xs font-semibold text-text-primary">Available for new opportunities and roles</span>
+            </div>
+
+            <!-- Headline -->
+            <div class="animate-hero-2">
+              <h1 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-text-primary tracking-tight leading-[1.12]">
+                Building responsive web applications with clean architecture and fast load times.
+              </h1>
+            </div>
+
+            <!-- Lead Subtitle (From CV Summary) -->
+            <p class="text-base sm:text-lg text-text-secondary leading-relaxed max-w-2xl animate-hero-3">
+              Hi, I'm <strong>Tito Adhitya Pratama</strong>, an entry-level software engineer and recent graduate in Informatics and Computer Engineering Education from State University of Jakarta. I build web applications with Vue.js, JavaScript, and Tailwind CSS, with hands-on full-stack experience using Laravel, Inertia.js, and Nuxt.
+            </p>
+
+            <!-- Action CTAs -->
+            <div class="flex flex-wrap items-center gap-3.5 pt-1 animate-hero-4">
+              <a
+                href="#projects"
+                class="h-10 px-5 rounded-md bg-primary-600 hover:bg-primary-700 text-white text-sm font-semibold inline-flex items-center gap-2 shadow-sm active:scale-95 transition-all duration-150"
+              >
+                <span>View selected works</span>
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="5" y1="12" x2="19" y2="12"></line>
+                  <polyline points="12 5 19 12 12 19"></polyline>
+                </svg>
+              </a>
+
+              <a
+                href="/CV_Tito_Adhitya_Pratama.pdf"
+                target="_blank"
+                class="h-10 px-4 rounded-md bg-surface-card hover:bg-surface-muted text-text-primary border border-border hover:border-border-strong text-sm font-semibold inline-flex items-center gap-2 shadow-sm active:scale-95 transition-all duration-150"
+              >
+                <svg class="w-4 h-4 text-text-secondary" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                  <polyline points="14 2 14 8 20 8"></polyline>
+                  <line x1="16" y1="13" x2="8" y2="13"></line>
+                  <line x1="16" y1="17" x2="8" y2="17"></line>
+                </svg>
+                <span>Download CV</span>
+              </a>
+
+              <button
+                @click="copyEmail"
+                class="h-10 px-4 rounded-md bg-surface-card hover:bg-surface-muted text-text-secondary border border-border hover:border-border-strong text-sm font-medium inline-flex items-center gap-2 active:scale-95 transition-all duration-150"
+              >
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect width="14" height="14" x="8" y="8" rx="2" ry="2"></rect>
+                  <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"></path>
+                </svg>
+                <span>{{ emailCopied ? 'Copied' : 'Copy email' }}</span>
+              </button>
+            </div>
+
+            <!-- Quick Trust Anchors -->
+            <div class="flex flex-wrap items-center gap-6 pt-4 border-t border-border text-xs text-text-secondary font-medium animate-hero-4">
+              <div class="flex items-center gap-1.5">
+                <svg class="w-4 h-4 text-success-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                  <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                </svg>
+                <span>Vue.js, Nuxt, and Laravel</span>
+              </div>
+
+              <div class="flex items-center gap-1.5">
+                <svg class="w-4 h-4 text-success-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+                </svg>
+                <span>Fast Core Web Vitals</span>
+              </div>
+
+              <div class="flex items-center gap-1.5">
+                <svg class="w-4 h-4 text-primary-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"></path>
+                  <circle cx="12" cy="10" r="3"></circle>
+                </svg>
+                <span>Jakarta Barat, ID (UTC+7)</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right Column: Bento Spec Card (Stitch Architecture) -->
+          <div class="lg:col-span-5 flex flex-col gap-4 animate-hero-aside">
+            <div class="bg-surface-card border border-border rounded-xl p-6 shadow-sm flex flex-col gap-4">
+              <!-- Window Bar Header -->
+              <div class="flex items-center justify-between pb-3.5 border-b border-border">
+                <div class="flex items-center gap-1.5">
+                  <span class="w-2.5 h-2.5 rounded-full bg-border-strong"></span>
+                  <span class="w-2.5 h-2.5 rounded-full bg-border-strong"></span>
+                  <span class="w-2.5 h-2.5 rounded-full bg-border-strong"></span>
+                  <span class="font-mono text-xs text-text-tertiary ml-2">system.architect.vue</span>
+                </div>
+                <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-surface-muted border border-border text-text-secondary text-[11px] font-medium tracking-tight">
+                  <span class="w-1.5 h-1.5 rounded-full bg-success-500"></span>
+                  <span>Strict standard</span>
+                </div>
+              </div>
+
+              <!-- Metric Tiles -->
+              <div class="grid grid-cols-2 gap-3">
+                <div class="bg-surface-muted border border-border rounded-lg p-3.5">
+                  <span class="text-xs text-text-tertiary font-medium">Academic merit</span>
+                  <div class="text-2xl font-bold text-text-primary tabular-nums mt-0.5">3.77 / 4.00</div>
+                  <span class="text-xs text-text-secondary">GPA, UNJ Graduate</span>
+                </div>
+                <div class="bg-surface-muted border border-border rounded-lg p-3.5">
+                  <span class="text-xs text-text-tertiary font-medium">Industry intern</span>
+                  <div class="text-2xl font-bold text-text-primary tabular-nums mt-0.5">4 Months</div>
+                  <span class="text-xs text-text-secondary">PT. Daya Gagas</span>
+                </div>
+              </div>
+
+              <!-- Accessibility Card -->
+              <div class="bg-surface-muted border border-border rounded-lg p-3.5 flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                  <div class="w-8 h-8 rounded bg-surface-card border border-border flex items-center justify-center text-primary-600">
+                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <circle cx="12" cy="4" r="2"></circle>
+                      <path d="m4.93 10.93 4.24-4.24a2 2 0 0 1 2.83 0l4.24 4.24"></path>
+                      <path d="M12 10v10"></path>
+                      <path d="m8 16 4 4 4-4"></path>
+                    </svg>
+                  </div>
+                  <div>
+                    <h4 class="text-sm font-bold text-text-primary">100% WCAG AA standard</h4>
+                    <p class="text-xs text-text-secondary">Semantic, keyboard-navigable, clean DOM</p>
+                  </div>
+                </div>
+                <svg class="w-5 h-5 text-success-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                  <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                </svg>
+              </div>
+
+              <!-- Engineering Philosophy Quote -->
+              <div class="bg-surface-muted border border-border rounded-lg p-3.5 flex items-start gap-3">
+                <svg class="w-5 h-5 text-primary-600 flex-shrink-0 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="4 17 10 11 4 5"></polyline>
+                  <line x1="12" y1="19" x2="20" y2="19"></line>
+                </svg>
+                <div>
+                  <p class="text-xs text-text-primary italic leading-relaxed">
+                    "Clean code loads fast, keeps interfaces accessible, and makes maintenance predictable."
+                  </p>
+                  <p class="text-[11px] text-text-tertiary font-semibold mt-1">
+                    Engineering principle
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================================
+           2. Featured Projects (Horizontal Split Cards)
+           ============================================================ -->
+      <section id="projects" class="py-16 sm:py-20 border-t border-border">
+        <!-- Section Header -->
+        <div class="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-4 reveal-item">
+          <div>
+            <div class="inline-flex items-center gap-1.5 text-primary-600 text-xs font-bold uppercase tracking-wider mb-2">
+              <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+              </svg>
+              <span>Selected works</span>
+            </div>
+            <h2 class="text-2xl sm:text-3xl font-bold text-text-primary tracking-tight">Featured projects</h2>
+            <p class="text-base text-text-secondary mt-1">
+              Web applications built for production, campus management, and real-time local network sharing.
+            </p>
+          </div>
+
+          <!-- Filter Tabs -->
+          <div class="inline-flex items-center gap-1 p-1 bg-surface-muted border border-border rounded-lg self-start md:self-auto">
+            <button
+              v-for="filter in filters"
+              :key="filter.value"
+              @click="activeFilter = filter.value"
+              class="px-3.5 py-1.5 text-xs font-semibold rounded transition-colors duration-150"
+              :class="activeFilter === filter.value ? 'bg-surface-card text-primary-600 shadow-sm border border-border/80' : 'text-text-secondary hover:text-text-primary'"
+            >
+              {{ filter.label }}
+            </button>
+          </div>
+        </div>
+
+        <!-- Projects Stack -->
+        <TransitionGroup
+          name="project-fade"
+          tag="div"
+          class="flex flex-col gap-7"
+        >
+          <article
+            v-for="project in filteredProjects"
+            :key="project.id"
+            class="bg-surface-card border border-border rounded-xl p-6 sm:p-8 shadow-sm grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-center hover:border-border-strong hover:-translate-y-0.5 hover:shadow-md transition-all duration-200"
+          >
+            <!-- Left Info (7 Cols) -->
+            <div class="lg:col-span-7 flex flex-col justify-between gap-4">
+              <div class="flex flex-col gap-2.5">
+                <div class="flex flex-wrap items-center gap-2">
+                  <span class="px-2.5 py-0.5 rounded text-[11px] font-semibold bg-primary-50 text-primary-700 border border-primary-100">
+                    {{ project.category }}
+                  </span>
+                  <span class="text-xs text-text-tertiary">{{ project.context }}</span>
+                </div>
+
+                <h3 class="text-xl sm:text-2xl font-bold text-text-primary tracking-tight leading-snug">
+                  {{ project.title }}
+                </h3>
+
+                <p class="text-sm text-text-secondary leading-relaxed">
+                  {{ project.description }}
+                </p>
+
+                <!-- Tech Badges -->
+                <div class="flex flex-wrap gap-1.5 pt-1">
+                  <span
+                    v-for="tech in project.techStack"
+                    :key="tech"
+                    class="px-2.5 py-1 rounded bg-surface-muted border border-border text-xs font-semibold text-text-primary"
+                  >
+                    {{ tech }}
+                  </span>
+                </div>
+              </div>
+
+              <!-- Actions -->
+              <div class="flex flex-wrap items-center gap-3 pt-4 border-t border-border">
+                <button
+                  @click="openModal(project)"
+                  class="h-9 px-4 rounded-md bg-primary-600 hover:bg-primary-700 text-white text-xs font-semibold inline-flex items-center gap-1.5 shadow-sm active:scale-95 transition-all duration-150"
+                >
+                  <span>View project details</span>
+                  <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                    <polyline points="12 5 19 12 12 19"></polyline>
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            <!-- Right Thumbnail (5 Cols) -->
+            <div
+              @click="openModal(project)"
+              class="lg:col-span-5 bg-surface-muted border border-border rounded-lg p-2 overflow-hidden cursor-pointer group"
+              title="Click to view full screenshot gallery"
+            >
+              <img
+                :src="project.image"
+                :alt="project.title"
+                class="w-full h-56 sm:h-64 object-cover object-top rounded border border-border group-hover:scale-[1.02] transition-transform duration-300"
+                loading="lazy"
+              />
+            </div>
+          </article>
+        </TransitionGroup>
+      </section>
+
+      <!-- ============================================================
+           3. Technical Stack & Capabilities (4-Pillar Grid)
+           ============================================================ -->
+      <section id="skills" class="py-16 sm:py-20 border-t border-border">
+        <div class="mb-10 reveal-item">
+          <div class="inline-flex items-center gap-1.5 text-primary-600 text-xs font-bold uppercase tracking-wider mb-2">
+            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="16 18 22 12 16 6"></polyline>
+              <polyline points="8 6 2 12 8 18"></polyline>
+            </svg>
+            <span>Core capabilities</span>
+          </div>
+          <h2 class="text-2xl sm:text-3xl font-bold text-text-primary tracking-tight">Technical stack and skills</h2>
+          <p class="text-base text-text-secondary mt-1">
+            Technologies and tooling I actively work with to ship reliable web systems.
           </p>
-          <h1
-            class="text-4xl sm:text-5xl md:text-7xl font-extrabold tracking-tight drop-shadow-lg gradient-text"
-          >
-            {{ userProfile.name }}
-          </h1>
-          <h2
-            class="text-2xl sm:text-3xl md:text-4xl font-bold flex items-center justify-center gap-1 min-h-[40px] text-slate-500 dark:text-slate-300"
-          >
-            {{ displayedRole
-            }}<span class="text-violet-500 dark:text-violet-400 animate-pulse"
-              >|</span
-            >
-          </h2>
         </div>
 
-        <div
-          class="inline-block font-mono text-sm sm:text-base px-5 py-3 rounded-xl shadow-xl hover:scale-105 transition-transform duration-300 cursor-default bg-white border border-slate-200 text-amber-600 dark:bg-slate-900 dark:border-slate-700 dark:text-amber-400"
-        >
-          > {{ userProfile.tagline
-          }}<span
-            class="inline-block ml-1 w-2 h-4 align-middle animate-ping bg-amber-500 dark:bg-amber-400"
-          ></span>
-        </div>
-
-        <p
-          class="max-w-2xl text-base md:text-lg leading-relaxed text-slate-600 dark:text-slate-300"
-        >
-          {{ userProfile.description }}
-        </p>
-
-        <div class="flex flex-wrap justify-center gap-3 sm:gap-4 mt-4">
-          <span
-            v-for="(skill, index) in userProfile.skills"
-            :key="index"
-            class="px-5 py-2 rounded-full text-sm font-medium transition-all duration-300 cursor-default hover:-translate-y-1"
-            :class="skillColors[index % skillColors.length]"
-          >
-            {{ skill }}
-          </span>
-        </div>
-
-        <div class="flex flex-col sm:flex-row gap-4 pt-6 w-full sm:w-auto">
-          <a
-            href="#projects"
-            class="w-full sm:w-auto px-8 py-3 font-bold rounded-xl transition-all duration-300 hover:-translate-y-1 text-center bg-gradient-to-r from-violet-500 to-indigo-500 hover:from-violet-400 hover:to-indigo-400 text-white shadow-[0_0_15px_rgba(139,92,246,0.4)] hover:shadow-[0_0_25px_rgba(139,92,246,0.7)]"
-          >
-            View Projects
-          </a>
-          <a
-            href="/CV_Tito_Adhitya_Pratama.pdf"
-            target="_blank"
-            class="w-full sm:w-auto px-8 py-3 font-semibold rounded-xl border transition-all duration-300 shadow-lg hover:-translate-y-1 bg-white hover:bg-slate-50 text-slate-700 border-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-white dark:border-slate-600"
-          >
-            Download CV
-          </a>
-        </div>
-      </div>
-    </section>
-
-    <!-- Divider 1 — Violet to Cyan -->
-    <div class="reveal relative z-10 w-full flex justify-center py-12">
-      <div
-        class="h-1 w-11/12 max-w-6xl rounded-full opacity-90 bg-gradient-to-r from-transparent via-violet-500 to-transparent shadow-[0_0_20px_rgba(139,92,246,0.5)]"
-      ></div>
-    </div>
-
-    <!-- ==========================
-           ABOUT ME SECTION
-           ========================== -->
-    <section
-      id="about"
-      class="py-24 px-6 sm:px-12 max-w-6xl mx-auto relative z-10"
-    >
-      <div class="flex flex-col lg:flex-row gap-12 items-center reveal">
-        <!-- Left Column -->
-        <div class="w-full lg:w-1/2 space-y-6">
-          <div class="space-y-4">
-            <h3
-              class="text-3xl sm:text-5xl font-extrabold tracking-tight text-slate-800 dark:text-white"
-            >
-              About Me
-            </h3>
-            <div
-              class="w-20 h-1 rounded-full bg-gradient-to-r from-emerald-400 to-teal-500"
-            ></div>
-          </div>
-
-          <div
-            class="space-y-4 text-base sm:text-lg leading-relaxed font-light text-slate-600 dark:text-slate-300"
-          >
-            <p>
-              I recently graduated with a degree in Informatics and Computer
-              Engineering Education from State University of Jakarta, and I am
-              currently focusing on my journey as a Front-End Developer.
-            </p>
-            <p>
-              During my studies, I completed a 4-month internship at
-              <span class="font-semibold text-emerald-600 dark:text-emerald-400"
-                >PT. Daya Gagas Internasional</span
-              >, where I honed my skills in translating complex design
-              prototypes into responsive, interactive web interfaces using
-              Vue.js and Tailwind CSS.
-            </p>
-            <p>
-              Beyond coding, I am a collaborative problem-solver who values
-              clean code and continuous learning. I am always eager to adapt to
-              new technologies and grow within a professional team environment.
-            </p>
-          </div>
-        </div>
-
-        <!-- Right Column -->
-        <div class="w-full lg:w-1/2 flex flex-col gap-6">
-          <!-- Internship Card -->
-          <div
-            class="relative overflow-hidden rounded-2xl transition-all duration-300 group hover:-translate-y-1 bg-white/80 border border-slate-200 shadow-sm hover:shadow-lg hover:border-emerald-300 dark:bg-slate-900/50 dark:backdrop-blur-sm dark:border-slate-700 dark:hover:border-emerald-500/50 dark:hover:shadow-[0_10px_30px_rgba(16,185,129,0.1)]"
-          >
-            <!-- Colored left accent bar -->
-            <div
-              class="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-emerald-400 to-teal-500 rounded-l-2xl"
-            ></div>
-            <div class="p-6 sm:p-8 pl-8 sm:pl-10">
-              <div class="flex items-start justify-between mb-2">
-                <div>
-                  <h4
-                    class="text-xl font-bold transition-colors text-slate-800 group-hover:text-emerald-600 dark:text-white dark:group-hover:text-emerald-300"
-                  >
-                    Front-End Developer Intern
-                  </h4>
-                  <p
-                    class="text-sm font-semibold mt-1 text-emerald-600 dark:text-emerald-500"
-                  >
-                    PT. Daya Gagas Internasional
-                  </p>
-                </div>
-                <span
-                  class="text-xs font-semibold px-3 py-1 rounded-full border shrink-0 bg-emerald-50 text-emerald-600 border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20"
-                  >Mar - Jul 2025</span
-                >
-              </div>
-              <p
-                class="text-sm leading-relaxed mt-4 text-slate-500 dark:text-slate-400"
-              >
-                Contributed to the DapurGo web interface, integrated RESTful
-                APIs, and built reusable Vue components to ensure consistency
-                across dashboard pages.
-              </p>
-            </div>
-          </div>
-
-          <!-- Education Card -->
-          <div
-            class="relative overflow-hidden rounded-2xl transition-all duration-300 group hover:-translate-y-1 bg-white/80 border border-slate-200 shadow-sm hover:shadow-lg hover:border-violet-300 dark:bg-slate-900/50 dark:backdrop-blur-sm dark:border-slate-700 dark:hover:border-violet-500/50 dark:hover:shadow-[0_10px_30px_rgba(139,92,246,0.1)]"
-          >
-            <!-- Colored left accent bar -->
-            <div
-              class="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-violet-400 to-indigo-500 rounded-l-2xl"
-            ></div>
-            <div class="p-6 sm:p-8 pl-8 sm:pl-10">
-              <div class="flex items-start justify-between mb-2">
-                <div>
-                  <h4
-                    class="text-xl font-bold transition-colors text-slate-800 group-hover:text-violet-600 dark:text-white dark:group-hover:text-violet-300"
-                  >
-                    Bachelor's Degree
-                  </h4>
-                  <p
-                    class="text-sm font-semibold mt-1 text-violet-600 dark:text-violet-500"
-                  >
-                    State University of Jakarta
-                  </p>
-                </div>
-                <span
-                  class="text-xs font-semibold px-3 py-1 rounded-full border shrink-0 bg-violet-50 text-violet-600 border-violet-200 dark:bg-violet-500/10 dark:text-violet-400 dark:border-violet-500/20"
-                  >2022 - 2026</span
-                >
-              </div>
-              <p
-                class="text-sm leading-relaxed mt-4 text-slate-500 dark:text-slate-400"
-              >
-                Majored in Informatics and Computer Engineering Education. Built
-                a strong foundation in web development, algorithms, and software
-                engineering principles.
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Divider 2 — Emerald to Teal -->
-    <div class="reveal relative z-10 w-full flex justify-center py-12">
-      <div
-        class="h-1 w-11/12 max-w-6xl rounded-full opacity-90 bg-gradient-to-r from-transparent via-emerald-500 to-transparent shadow-[0_0_20px_rgba(16,185,129,0.5)]"
-      ></div>
-    </div>
-
-    <!-- ==========================================
-           Projects Section
-           ========================================== -->
-    <section
-      id="projects"
-      class="py-24 px-6 sm:px-12 max-w-6xl mx-auto relative z-10"
-    >
-      <!-- Section Title -->
-      <div class="text-center mb-16 space-y-4">
-        <h3
-          class="text-3xl sm:text-5xl font-extrabold tracking-tight text-slate-800 dark:text-white"
-        >
-          Featured Projects
-        </h3>
-        <div
-          class="w-20 h-1 mx-auto rounded-full bg-gradient-to-r from-violet-400 to-indigo-500"
-        ></div>
-        <p class="text-lg text-slate-500 dark:text-slate-400">
-          Some of the works I've built and contributed to.
-        </p>
-      </div>
-
-      <!-- Project Cards Grid -->
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
-        <div
-          v-for="(project, index) in projects"
-          :key="project.id"
-          @click="openModal(project)"
-          class="reveal group rounded-2xl overflow-hidden cursor-pointer hover:-translate-y-2 transition-all duration-300 flex flex-col bg-white/80 border border-slate-200 shadow-sm hover:shadow-xl hover:border-violet-300 dark:bg-slate-900/50 dark:backdrop-blur-sm dark:border-slate-700 dark:hover:shadow-[0_10px_30px_rgba(139,92,246,0.15)] dark:hover:border-violet-500/50"
-          :class="`delay-${((index % 3) + 1) * 100}`"
-        >
-          <!-- Project Image -->
-          <div class="h-56 overflow-hidden relative">
-            <img
-              :src="project.image"
-              :alt="project.title"
-              class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-            />
-            <div
-              class="absolute inset-0 transition-colors duration-300 bg-white/10 group-hover:bg-transparent dark:bg-slate-900/20 dark:group-hover:bg-transparent"
-            ></div>
-          </div>
-
-          <!-- Card Text Area -->
-          <div class="p-6 flex-grow flex flex-col justify-between">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+          <!-- Pillar 1: Frontend Core -->
+          <div class="bg-surface-card border border-border rounded-xl p-5 shadow-sm flex flex-col justify-between gap-4 hover:-translate-y-0.5 hover:border-border-strong transition-all duration-200 reveal-item">
             <div>
-              <p
-                class="text-sm font-semibold mb-2 text-violet-500 dark:text-violet-400"
-              >
-                {{ project.category }}
-              </p>
-              <h4
-                class="text-2xl font-bold mb-3 transition-colors text-slate-800 group-hover:text-violet-600 dark:text-slate-100 dark:group-hover:text-violet-300"
-              >
-                {{ project.title }}
-              </h4>
-              <p
-                class="text-sm line-clamp-3 mb-4 text-slate-500 dark:text-slate-400"
-              >
-                {{ project.description }}
+              <div class="w-10 h-10 rounded-lg bg-surface-muted text-primary-600 flex items-center justify-center mb-3">
+                <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect width="20" height="14" x="2" y="3" rx="2"></rect>
+                  <line x1="8" y1="21" x2="16" y2="21"></line>
+                  <line x1="12" y1="17" x2="12" y2="21"></line>
+                </svg>
+              </div>
+              <h3 class="text-base font-bold text-text-primary mb-1">Frontend core</h3>
+              <p class="text-xs text-text-secondary leading-relaxed">
+                Component architecture, state management, and responsive interfaces.
               </p>
             </div>
-
-            <!-- Tech Stack Mini Tags -->
-            <div class="flex flex-wrap gap-2 mt-auto">
-              <span
-                v-for="tech in project.techStack.slice(0, 3)"
-                :key="tech"
-                class="text-xs font-medium px-3 py-1 rounded-md text-slate-600 bg-slate-100 border border-slate-200 dark:text-slate-300 dark:bg-slate-800 dark:border-slate-700"
-              >
-                {{ tech }}
+            <div class="flex flex-wrap gap-1.5 pt-3 border-t border-border">
+              <span v-for="tag in ['Vue.js', 'Nuxt', 'TypeScript', 'JavaScript', 'HTML/CSS']" :key="tag" class="px-2 py-0.5 rounded bg-surface-muted border border-border text-[11px] font-semibold text-text-primary">
+                {{ tag }}
               </span>
-              <span
-                v-if="project.techStack.length > 3"
-                class="text-xs font-medium px-3 py-1 rounded-md text-slate-400 bg-slate-50 border border-slate-200/50 dark:text-slate-400 dark:bg-slate-800/50 dark:border-slate-700/50"
-              >
-                +{{ project.techStack.length - 3 }} more
+            </div>
+          </div>
+
+          <!-- Pillar 2: Styling & UI -->
+          <div class="bg-surface-card border border-border rounded-xl p-5 shadow-sm flex flex-col justify-between gap-4 hover:-translate-y-0.5 hover:border-border-strong transition-all duration-200 reveal-item" style="transition-delay: 40ms;">
+            <div>
+              <div class="w-10 h-10 rounded-lg bg-info-50 text-info-600 flex items-center justify-center mb-3">
+                <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="13.5" cy="6.5" r=".5" fill="currentColor"></circle>
+                  <circle cx="17.5" cy="10.5" r=".5" fill="currentColor"></circle>
+                  <circle cx="8.5" cy="7.5" r=".5" fill="currentColor"></circle>
+                  <circle cx="6.5" cy="12.5" r=".5" fill="currentColor"></circle>
+                  <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.563-2.512 5.563-5.563C22 6.5 17.5 2 12 2Z"></path>
+                </svg>
+              </div>
+              <h3 class="text-base font-bold text-text-primary mb-1">Styling and interface</h3>
+              <p class="text-xs text-text-secondary leading-relaxed">
+                Design tokens, CSS variables, responsive grid layouts, and WCAG AA contrast standards.
+              </p>
+            </div>
+            <div class="flex flex-wrap gap-1.5 pt-3 border-t border-border">
+              <span v-for="tag in ['Tailwind CSS', 'CSS Variables', 'Figma', 'Responsive Grid', 'WCAG AA']" :key="tag" class="px-2 py-0.5 rounded bg-surface-muted border border-border text-[11px] font-semibold text-text-primary">
+                {{ tag }}
+              </span>
+            </div>
+          </div>
+
+          <!-- Pillar 3: Full-Stack & Tooling -->
+          <div class="bg-surface-card border border-border rounded-xl p-5 shadow-sm flex flex-col justify-between gap-4 hover:-translate-y-0.5 hover:border-border-strong transition-all duration-200 reveal-item" style="transition-delay: 80ms;">
+            <div>
+              <div class="w-10 h-10 rounded-lg bg-surface-muted text-text-primary flex items-center justify-center mb-3">
+                <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="18" cy="18" r="3"></circle>
+                  <circle cx="6" cy="6" r="3"></circle>
+                  <path d="M13 6h3a2 2 0 0 1 2 2v7"></path>
+                  <line x1="6" y1="9" x2="6" y2="21"></line>
+                </svg>
+              </div>
+              <h3 class="text-base font-bold text-text-primary mb-1">Full-stack and backend</h3>
+              <p class="text-xs text-text-secondary leading-relaxed">
+                RESTful API endpoints, database schemas, Inertia bridges, and Redis messaging.
+              </p>
+            </div>
+            <div class="flex flex-wrap gap-1.5 pt-3 border-t border-border">
+              <span v-for="tag in ['Laravel', 'Inertia.js', 'MySQL', 'REST API', 'Redis']" :key="tag" class="px-2 py-0.5 rounded bg-surface-muted border border-border text-[11px] font-semibold text-text-primary">
+                {{ tag }}
+              </span>
+            </div>
+          </div>
+
+          <!-- Pillar 4: DevOps & Performance -->
+          <div class="bg-surface-card border border-border rounded-xl p-5 shadow-sm flex flex-col justify-between gap-4 hover:-translate-y-0.5 hover:border-border-strong transition-all duration-200 reveal-item" style="transition-delay: 120ms;">
+            <div>
+              <div class="w-10 h-10 rounded-lg bg-success-50 text-success-600 flex items-center justify-center mb-3">
+                <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                </svg>
+              </div>
+              <h3 class="text-base font-bold text-text-primary mb-1">DevOps and tooling</h3>
+              <p class="text-xs text-text-secondary leading-relaxed">
+                Docker containers, Git version control, Bun runtime, and team issue tracking.
+              </p>
+            </div>
+            <div class="flex flex-wrap gap-1.5 pt-3 border-t border-border">
+              <span v-for="tag in ['Docker', 'Bun', 'Git and GitLab', 'ClickUp', 'Chart.js']" :key="tag" class="px-2 py-0.5 rounded bg-surface-muted border border-border text-[11px] font-semibold text-text-primary">
+                {{ tag }}
               </span>
             </div>
           </div>
         </div>
-      </div>
-    </section>
+      </section>
 
-    <!-- Divider 3 — Rose to Amber -->
-    <div class="reveal relative z-10 w-full flex justify-center py-12">
-      <div
-        class="h-1 w-11/12 max-w-6xl rounded-full opacity-90 bg-gradient-to-r from-transparent via-rose-500 to-transparent shadow-[0_0_20px_rgba(244,63,94,0.5)]"
-      ></div>
-    </div>
+      <!-- ============================================================
+           4. Experience & Background (Structured Split Layout)
+           ============================================================ -->
+      <section id="experience" class="py-16 sm:py-20 border-t border-border">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
+          <!-- Left: Career Milestones & Education (7 Cols) -->
+          <div class="lg:col-span-7 flex flex-col gap-6">
+            <div class="reveal-item">
+              <div class="inline-flex items-center gap-1.5 text-primary-600 text-xs font-bold uppercase tracking-wider mb-2">
+                <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <rect width="20" height="14" x="2" y="7" rx="2" ry="2"></rect>
+                  <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
+                </svg>
+                <span>Career milestones</span>
+              </div>
+              <h2 class="text-2xl sm:text-3xl font-bold text-text-primary tracking-tight">Work experience</h2>
+            </div>
 
-    <!-- =============================
-           Contact Section
-           ============================= -->
-    <section
-      id="contact"
-      class="reveal py-24 px-6 sm:px-12 max-w-3xl mx-auto relative z-10 text-center"
-    >
-      <h3
-        class="text-3xl sm:text-5xl font-extrabold tracking-tight mb-4 text-slate-800 dark:text-white"
-      >
-        Get In Touch
-      </h3>
-      <div
-        class="w-16 h-1 mx-auto rounded-full mb-8 bg-gradient-to-r from-rose-400 to-pink-500"
-      ></div>
+            <!-- 1. PT. Daya Gagas Internasional -->
+            <div class="bg-surface-card border border-border rounded-xl p-6 shadow-sm flex flex-col gap-4 reveal-item">
+              <div class="flex flex-wrap items-start justify-between gap-2 pb-4 border-b border-border">
+                <div>
+                  <h3 class="text-lg font-bold text-text-primary">Front-end developer, intern</h3>
+                  <p class="text-sm font-semibold text-primary-600 mt-0.5">PT. Daya Gagas Internasional</p>
+                </div>
+                <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-primary-50 text-primary-700 border border-primary-100">
+                  March to July 2025, 4 months
+                </span>
+              </div>
 
-      <p
-        class="text-lg leading-relaxed mb-10 text-slate-600 dark:text-slate-300"
-      >
-        I am currently open to new opportunities as a Front-End Developer.
-        Whether you have a question, a project proposal, or just want to say hi,
-        my inbox is always open. I'll try my best to get back to you!
-      </p>
+              <ul class="flex flex-col gap-2.5 text-sm text-text-secondary">
+                <li class="flex items-start gap-2.5">
+                  <span class="w-1.5 h-1.5 rounded-full bg-primary-600 mt-2 flex-shrink-0"></span>
+                  <span>Built responsive pages for the DapurGo web app using Vue.js and JavaScript based on Figma prototypes.</span>
+                </li>
+                <li class="flex items-start gap-2.5">
+                  <span class="w-1.5 h-1.5 rounded-full bg-primary-600 mt-2 flex-shrink-0"></span>
+                  <span>Implemented CRUD features for Product, Dish, and Supplier modules with RESTful API integration.</span>
+                </li>
+                <li class="flex items-start gap-2.5">
+                  <span class="w-1.5 h-1.5 rounded-full bg-primary-600 mt-2 flex-shrink-0"></span>
+                  <span>Developed reusable Vue components to maintain UI consistency across multiple dashboard pages.</span>
+                </li>
+                <li class="flex items-start gap-2.5">
+                  <span class="w-1.5 h-1.5 rounded-full bg-primary-600 mt-2 flex-shrink-0"></span>
+                  <span>Collaborated via GitLab, ClickUp, and Google Meet in a cross-functional agile team.</span>
+                </li>
+              </ul>
 
-      <!-- Contact Buttons -->
-      <div
-        class="flex flex-col sm:flex-row flex-wrap justify-center gap-4 sm:gap-6"
-      >
-        <!-- Email Button -->
-        <button
-          @click="copyEmail"
-          class="flex items-center justify-center gap-3 px-8 py-4 backdrop-blur-sm rounded-2xl transition-all duration-300 group shadow-lg hover:-translate-y-1 w-full sm:w-auto min-w-[180px] bg-white/80 border border-slate-200 hover:border-[#EA4335] hover:bg-red-50 text-slate-600 hover:text-[#EA4335] dark:bg-slate-900/80 dark:border-slate-700 dark:hover:border-[#EA4335] dark:hover:bg-[#EA4335]/20 dark:text-slate-300 dark:hover:text-[#EA4335] hover:shadow-[0_0_20px_rgba(234,67,53,0.2)] dark:hover:shadow-[0_0_20px_rgba(234,67,53,0.3)]"
-        >
-          <svg
-            v-if="!emailCopied"
-            xmlns="http://www.w3.org/2000/svg"
-            class="h-6 w-6 group-hover:animate-bounce"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
-            />
-          </svg>
-          <svg
-            v-else
-            xmlns="http://www.w3.org/2000/svg"
-            class="h-6 w-6 text-green-500 dark:text-green-400"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M5 13l4 4L19 7"
-            />
-          </svg>
-          <span
-            class="font-bold text-lg"
-            :class="emailCopied ? 'text-green-500 dark:text-green-400' : ''"
-          >
-            {{ emailCopied ? "Email Copied!" : "Email" }}
-          </span>
-        </button>
+              <div class="flex flex-wrap gap-1.5 pt-3 border-t border-border">
+                <span v-for="tag in ['Vue.js', 'JavaScript', 'Tailwind CSS', 'REST API', 'GitLab', 'ClickUp']" :key="tag" class="px-2 py-0.5 rounded bg-surface-muted border border-border text-[11px] font-semibold text-text-primary">
+                  {{ tag }}
+                </span>
+              </div>
+            </div>
 
-        <!-- WhatsApp Button -->
-        <a
-          href="https://wa.me/6281318190212"
-          target="_blank"
-          rel="noopener noreferrer"
-          class="flex items-center justify-center gap-3 px-8 py-4 backdrop-blur-sm rounded-2xl transition-all duration-300 group shadow-lg hover:-translate-y-1 w-full sm:w-auto min-w-[180px] bg-white/80 border border-slate-200 hover:border-green-400 hover:bg-green-50 text-slate-600 hover:text-green-500 dark:bg-slate-900/80 dark:border-slate-700 dark:hover:border-green-400 dark:hover:bg-green-500/20 dark:text-slate-300 dark:hover:text-green-400 hover:shadow-[0_0_20px_rgba(74,222,128,0.2)] dark:hover:shadow-[0_0_20px_rgba(74,222,128,0.3)]"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            class="h-6 w-6 group-hover:animate-bounce"
-            fill="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.898-4.45 9.898-9.892 0-2.64-1.024-5.119-2.887-6.982-1.864-1.864-4.343-2.892-6.983-2.893-5.451 0-9.896 4.448-9.896 9.891.001 2.062.536 3.963 1.565 5.626l-1.127 4.116 4.238-1.46zM17.15 14.18c-.287-.144-1.696-.837-1.958-.934-.263-.096-.454-.144-.645.144-.191.288-.74 .934-.907 1.125-.167.192-.335.216-.622.072-2.176-1.085-3.666-2.079-5.127-4.22-.167-.245-.045-.357.106-.48.113-.092.247-.287.371-.431.124-.144.165-.246.247-.409.083-.163.042-.307-.021-.451-.062-.144-.645-1.554-.883-2.127-.233-.556-.47-.481-.645-.49-.166-.008-.356-.009-.547-.009s-.5.072-.763.36c-.262.288-1 .978-1 2.383s1.025 2.766 1.167 2.958c.143.192 2.015 3.076 4.881 4.312 2.115.912 2.951 1.011 3.967.925 1.096-.093 3.367-1.376 3.839-2.707.471-1.331.471-2.472.328-2.708-.143-.236-.531-.383-.818-.527z"
-            />
-          </svg>
-          <span class="font-bold text-lg">WhatsApp</span>
-        </a>
 
-        <!-- LinkedIn Button -->
-        <a
-          href="https://www.linkedin.com/in/titoadhityapratama"
-          target="_blank"
-          rel="noopener noreferrer"
-          class="flex items-center justify-center gap-3 px-8 py-4 backdrop-blur-sm rounded-2xl transition-all duration-300 group shadow-lg hover:-translate-y-1 w-full sm:w-auto min-w-[180px] bg-white/80 border border-slate-200 hover:border-[#0A66C2] hover:bg-blue-50 text-slate-600 hover:text-[#0A66C2] dark:bg-slate-900/80 dark:border-slate-700 dark:hover:border-[#0A66C2] dark:hover:bg-[#0A66C2]/20 dark:text-slate-300 dark:hover:text-[#0A66C2] hover:shadow-[0_0_20px_rgba(10,102,194,0.2)] dark:hover:shadow-[0_0_20px_rgba(10,102,194,0.3)]"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            class="h-6 w-6 group-hover:animate-bounce"
-            fill="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"
-            />
-          </svg>
-          <span class="font-bold text-lg">LinkedIn</span>
-        </a>
-      </div>
-    </section>
+            <!-- Formal Education -->
+            <div class="bg-surface-card border border-border rounded-xl p-6 shadow-sm flex flex-col gap-3 reveal-item">
+              <div class="flex flex-wrap items-start justify-between gap-2 pb-3 border-b border-border">
+                <div>
+                  <h3 class="text-lg font-bold text-text-primary">State University of Jakarta</h3>
+                  <p class="text-sm font-semibold text-primary-600 mt-0.5">Informatics and Computer Engineering Education</p>
+                </div>
+                <div class="text-right">
+                  <span class="text-xs font-semibold text-text-primary block">2022 to 2026</span>
+                  <span class="text-xs font-bold text-success-600 block mt-0.5">GPA: 3.77 / 4.00</span>
+                </div>
+              </div>
+              <p class="text-xs sm:text-sm text-text-secondary leading-relaxed">
+                Comprehensive study of computer engineering education, data structures, algorithms, relational database systems, and modern web application development with component frameworks.
+              </p>
+            </div>
+          </div>
 
-    <!-- ==================
-           Footer
-           ================== -->
-    <footer
-      class="py-8 text-center relative z-10 mt-12 backdrop-blur-md border-t border-slate-200/50 bg-white/30 dark:border-t dark:border-slate-800/50 dark:bg-slate-950/20"
-    >
-      <div class="flex flex-col items-center justify-center gap-2">
-        <p class="text-sm font-medium text-slate-500 dark:text-slate-400">
-          © 2026 <span class="gradient-text-sm">Tito Adhitya Pratama</span>. All
-          rights reserved.
-        </p>
-        <p
-          class="text-xs flex items-center gap-1 text-slate-400 dark:text-slate-500"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            class="h-4 w-4"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.243-4.243a8 8 0 1111.314 0z"
-            />
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
-            />
-          </svg>
-          West Jakarta, Indonesia
-        </p>
+          <!-- Right: About Me & Contact Hook (5 Cols) -->
+          <div class="lg:col-span-5 flex flex-col gap-6" id="about">
+            <div class="reveal-item">
+              <div class="inline-flex items-center gap-1.5 text-primary-600 text-xs font-bold uppercase tracking-wider mb-2">
+                <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path>
+                  <circle cx="12" cy="7" r="4"></circle>
+                </svg>
+                <span>Personal background</span>
+              </div>
+              <h2 class="text-2xl sm:text-3xl font-bold text-text-primary tracking-tight">About me</h2>
+            </div>
+
+            <!-- Bio Card -->
+            <div class="bg-surface-card border border-border rounded-xl p-6 shadow-sm flex flex-col gap-4 text-sm text-text-secondary leading-relaxed reveal-item">
+              <p>
+                I build web applications with clear typography, intuitive navigation, and fast interactions. I studied computer engineering education at State University of Jakarta and enjoy turning user requirements into dependable software.
+              </p>
+              <p>
+                Comfortable working in cross-functional teams with Git workflows, agile sprints, and RESTful API integrations. Quick to learn new technologies and focused on building accessible user interfaces.
+              </p>
+
+              <!-- Soft Skills & Languages (From CV) -->
+              <div class="p-3.5 bg-surface-muted rounded-lg border border-border flex flex-col gap-2">
+                <span class="text-xs font-bold uppercase tracking-wider text-text-primary">Soft skills and languages</span>
+                <p class="text-xs text-text-secondary">
+                  <strong>Soft skills:</strong> Analytical Thinking, Problem Solving, Team Collaboration, Adaptability.
+                </p>
+                <p class="text-xs text-text-secondary">
+                  <strong>Languages:</strong> Indonesian (native), English (intermediate).
+                </p>
+              </div>
+
+              <!-- Location Tag -->
+              <div class="flex items-center gap-2 text-xs font-medium text-text-secondary">
+                <svg class="w-4 h-4 text-primary-600 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"></path>
+                  <circle cx="12" cy="10" r="3"></circle>
+                </svg>
+                <span>Jakarta Barat, DKI Jakarta, Indonesia (UTC+7)</span>
+              </div>
+            </div>
+
+            <!-- Contact Box (ID: contact) -->
+            <div id="contact" class="bg-surface-muted border border-border rounded-xl p-6 shadow-sm flex flex-col gap-4 reveal-item">
+              <div class="flex items-center justify-between">
+                <h3 class="text-base font-bold text-text-primary">Direct communication</h3>
+                <span class="px-2 py-0.5 rounded text-[11px] font-semibold bg-success-50 text-success-600 border border-success-500/20">
+                  Open for opportunities
+                </span>
+              </div>
+
+              <!-- Email Row -->
+              <div class="p-3 bg-surface-card border border-border rounded-lg flex items-center justify-between gap-2">
+                <div class="flex flex-col">
+                  <span class="text-[11px] text-text-tertiary font-medium">Email address</span>
+                  <span class="font-mono text-xs sm:text-sm font-semibold text-text-primary">tapwrk1@gmail.com</span>
+                </div>
+                <button
+                  @click="copyEmail"
+                  class="h-8 px-3 rounded bg-surface-muted hover:bg-surface-hover text-text-primary border border-border text-xs font-semibold active:scale-95 transition-all duration-150"
+                >
+                  {{ emailCopied ? 'Copied' : 'Copy' }}
+                </button>
+              </div>
+
+              <!-- Phone Row -->
+              <div class="p-3 bg-surface-card border border-border rounded-lg flex items-center justify-between gap-2">
+                <div class="flex flex-col">
+                  <span class="text-[11px] text-text-tertiary font-medium">WhatsApp and phone</span>
+                  <span class="font-mono text-xs sm:text-sm font-semibold text-text-primary">+62 813 1819 0212</span>
+                </div>
+                <button
+                  @click="copyPhone"
+                  class="h-8 px-3 rounded bg-surface-muted hover:bg-surface-hover text-text-primary border border-border text-xs font-semibold active:scale-95 transition-all duration-150"
+                >
+                  {{ phoneCopied ? 'Copied' : 'Copy' }}
+                </button>
+              </div>
+
+              <!-- LinkedIn & GitHub Links -->
+              <div class="grid grid-cols-2 gap-2.5">
+                <a
+                  href="https://www.linkedin.com/in/titoadhityapratama"
+                  target="_blank"
+                  rel="noopener"
+                  class="h-9 px-3 rounded-md bg-surface-card hover:bg-surface-muted border border-border text-xs font-semibold text-text-primary flex items-center justify-center gap-1.5 active:scale-95 transition-all duration-150"
+                >
+                  <span>LinkedIn</span>
+                  <svg class="w-3.5 h-3.5 text-text-tertiary" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="7" y1="17" x2="17" y2="7"></line>
+                    <polyline points="7 7 17 7 17 17"></polyline>
+                  </svg>
+                </a>
+
+                <a
+                  href="https://github.com/TitoAdhitya06"
+                  target="_blank"
+                  rel="noopener"
+                  class="h-9 px-3 rounded-md bg-surface-card hover:bg-surface-muted border border-border text-xs font-semibold text-text-primary flex items-center justify-center gap-1.5 active:scale-95 transition-all duration-150"
+                >
+                  <span>GitHub</span>
+                  <svg class="w-3.5 h-3.5 text-text-tertiary" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="7" y1="17" x2="17" y2="7"></line>
+                    <polyline points="7 7 17 7 17 17"></polyline>
+                  </svg>
+                </a>
+              </div>
+
+              <!-- Message Draft Form -->
+              <form @submit.prevent="submitMessage" class="flex flex-col gap-3 pt-2">
+                <div>
+                  <label for="name" class="block text-xs font-semibold text-text-secondary mb-1">Your name</label>
+                  <input
+                    id="name"
+                    v-model="form.name"
+                    type="text"
+                    required
+                    placeholder="Your name"
+                    class="w-full h-9 px-3 bg-surface-card border border-border-strong rounded-md text-xs sm:text-sm text-text-primary focus:outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/30"
+                  />
+                </div>
+                <div>
+                  <label for="email" class="block text-xs font-semibold text-text-secondary mb-1">Email address</label>
+                  <input
+                    id="email"
+                    v-model="form.email"
+                    type="email"
+                    required
+                    placeholder="name@company.com"
+                    class="w-full h-9 px-3 bg-surface-card border border-border-strong rounded-md text-xs sm:text-sm text-text-primary focus:outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/30"
+                  />
+                </div>
+                <div>
+                  <label for="message" class="block text-xs font-semibold text-text-secondary mb-1">Message</label>
+                  <textarea
+                    id="message"
+                    v-model="form.message"
+                    required
+                    rows="3"
+                    placeholder="Tell me about your team or project..."
+                    class="w-full p-3 bg-surface-card border border-border-strong rounded-md text-xs sm:text-sm text-text-primary focus:outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/30 resize-y"
+                  ></textarea>
+                </div>
+                <button
+                  type="submit"
+                  :disabled="isSubmitting"
+                  class="w-full h-9 rounded-md bg-primary-600 hover:bg-primary-700 text-white text-xs font-semibold active:scale-95 transition-all duration-150 shadow-sm disabled:opacity-50"
+                >
+                  {{ isSubmitting ? 'Sending...' : 'Send message' }}
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="mt-auto border-t border-border bg-surface-card py-8">
+      <div class="max-w-[1180px] mx-auto px-4 sm:px-6 flex flex-wrap items-center justify-between gap-4 text-xs text-text-tertiary">
+        <div>
+          <strong>Tito Adhitya Pratama</strong>, front-end developer portfolio
+        </div>
+        <div>
+          Built with tokens and guidelines from <span class="font-mono text-text-secondary">DESIGN.md</span>.
+        </div>
       </div>
     </footer>
 
-    <!-- ==========================================
-           Scroll To Top Button
-           ========================================== -->
-    <Transition name="fade-up">
-      <button
-        v-if="showScrollTop"
-        @click="scrollToTop"
-        class="fixed bottom-8 right-8 z-50 p-4 rounded-full transition-all duration-300 hover:-translate-y-2 group bg-gradient-to-r from-violet-500 to-indigo-500 hover:from-violet-400 hover:to-indigo-400 text-white shadow-[0_0_15px_rgba(139,92,246,0.5)] hover:shadow-[0_0_25px_rgba(139,92,246,0.8)]"
-        aria-label="Scroll to top"
-      >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          class="h-6 w-6 group-hover:animate-bounce"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-        >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            d="M5 15l7-7 7 7"
-          />
-        </svg>
-      </button>
-    </Transition>
-
-    <!-- ==========================================
-           Modal / LightBox Pop-up
-           ========================================== -->
-    <div
-      v-if="isModalOpen"
-      class="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 backdrop-blur-md transition-opacity bg-white/80 dark:bg-slate-950/80"
-      @click.self="closeModal"
-    >
+    <!-- ============================================================
+         Project Detail Modal Dialog (Exact match from prototype.html)
+         ============================================================ -->
+    <Teleport to="body">
       <div
-        v-if="selectedProject"
-        class="w-full max-w-4xl max-h-[90vh] overflow-y-auto shadow-2xl relative flex flex-col animate-fadeIn rounded-3xl bg-white border border-slate-200 dark:bg-slate-900 dark:border-slate-700"
+        id="projectModal"
+        class="modal-overlay"
+        :class="{ open: isModalOpen }"
+        @click.self="closeModal"
       >
-        <!-- Close Button -->
-        <button
-          @click="closeModal"
-          class="absolute top-4 right-4 z-10 p-2 rounded-full backdrop-blur-sm transition-colors duration-300 bg-slate-100/80 hover:bg-red-500 text-slate-600 hover:text-white dark:bg-slate-800/80 dark:hover:bg-red-500 dark:text-white"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            class="h-6 w-6"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M6 18L18 6M6 6l12 12"
-            />
-          </svg>
-        </button>
-
-        <!-- Modal Image -->
-        <div
-          class="w-full h-64 sm:h-80 lg:h-96 shrink-0 relative group bg-slate-100 dark:bg-slate-800"
-        >
-          <img
-            :src="selectedProject.gallery[currentImageIndex]"
-            :alt="selectedProject.title"
-            class="w-full h-full transition-all duration-500"
-            :class="
-              selectedProject.gallery[currentImageIndex]?.endsWith(
-                'clipsync-3.jpg',
-              )
-                ? 'object-contain'
-                : 'object-cover'
-            "
-          />
-          <div
-            class="absolute inset-0 bg-gradient-to-t from-white via-transparent to-transparent dark:from-slate-900 dark:via-transparent dark:to-transparent"
-          ></div>
-
-          <!-- Navigation Buttons -->
-          <div
-            v-if="selectedProject.gallery.length > 1"
-            class="absolute inset-0 flex items-center justify-between px-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-          >
-            <button
-              @click="prevImage"
-              class="p-2 rounded-full backdrop-blur-sm transition-all duration-300 shadow-lg hover:scale-110 bg-white/80 hover:bg-violet-500 text-slate-700 hover:text-white dark:bg-slate-900/80 dark:hover:bg-violet-500 dark:text-white"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                class="h-6 w-6"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M15 19l-7-7 7-7"
-                />
-              </svg>
-            </button>
-            <button
-              @click="nextImage"
-              class="p-2 rounded-full backdrop-blur-sm transition-all duration-300 shadow-lg hover:scale-110 bg-white/80 hover:bg-violet-500 text-slate-700 hover:text-white dark:bg-slate-900/80 dark:hover:bg-violet-500 dark:text-white"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                class="h-6 w-6"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M9 5l7 7-7 7"
-                />
+        <div class="modal-dialog" role="dialog" aria-modal="true" aria-labelledby="modalProjectTitle">
+          <div class="modal-header">
+            <h3 id="modalProjectTitle" style="font-size: 1.25rem; font-weight: 700; color: var(--text-primary);">
+              {{ selectedProject?.title }}
+            </h3>
+            <button class="icon-btn" @click="closeModal" aria-label="Close modal dialog">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
               </svg>
             </button>
           </div>
 
-          <!-- Dots Indicator -->
-          <div
-            v-if="selectedProject.gallery.length > 1"
-            class="absolute bottom-4 left-0 right-0 flex justify-center gap-2 z-10"
-          >
-            <span
-              v-for="(img, idx) in selectedProject.gallery"
-              :key="idx"
-              class="w-2 h-2 rounded-full transition-all duration-300"
-              :class="
-                idx === currentImageIndex
-                  ? 'bg-violet-500 dark:bg-violet-400 w-6'
-                  : 'bg-slate-400/50 dark:bg-white/50'
-              "
-            ></span>
-          </div>
-        </div>
-
-        <!-- Modal Content -->
-        <div class="p-6 sm:p-10 -mt-10 relative z-10">
-          <p
-            class="font-semibold uppercase tracking-wider text-sm mb-2 text-violet-500 dark:text-violet-400"
-          >
-            {{ selectedProject.category }}
-          </p>
-          <h3
-            class="text-3xl sm:text-4xl font-extrabold mb-6 text-slate-800 dark:text-white"
-          >
-            {{ selectedProject.title }}
-          </h3>
-
-          <p
-            class="text-base sm:text-lg leading-relaxed mb-8 text-slate-600 dark:text-slate-300"
-          >
-            {{ selectedProject.description }}
-          </p>
-
-          <div class="mb-8">
-            <h4
-              class="text-lg font-bold mb-3 flex items-center gap-2 text-slate-800 dark:text-white"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                class="h-5 w-5 text-violet-500"
-                viewBox="0 0 20 20"
-                fill="currentColor"
+          <div class="modal-body">
+            <!-- Gallery Viewer with Clickable Dots & Crossfade -->
+            <div class="gallery-viewer">
+              <div
+                class="gallery-img-container"
+                :class="{ 'is-mobile-container': isCurrentMobileShot }"
               >
-                <path
-                  fill-rule="evenodd"
-                  d="M11.3 1.046A12.014 12.014 0 0010.3 1 12.014 12.014 0 009.298 2C4.195 2.158 1.43 5.437 1 9.5c0 4 2.89 7.02 6.7 7.5.5.06 1.01.1 1.5.1s1-.04 1.5-.1c3.81-.48 6.7-3.5 6.7-7.5-.43-4.063-3.195-7.342-8.298-7.5zM10 14a4 4 0 110-8 4 4 0 010 8z"
-                  clip-rule="evenodd"
+                <!-- Mobile UI Badge -->
+                <div v-if="isCurrentMobileShot" class="mobile-badge">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <rect width="14" height="20" x="5" y="2" rx="2" ry="2"></rect>
+                    <path d="M12 18h.01"></path>
+                  </svg>
+                  <span>Mobile View</span>
+                </div>
+
+                <img
+                  id="modalGalleryImg"
+                  :src="selectedProject?.gallery[currentGalleryIndex]"
+                  :alt="selectedProject?.title"
+                  class="gallery-img"
+                  :class="{ crossfading: isGalleryCrossfading, 'is-mobile-shot': isCurrentMobileShot }"
                 />
-              </svg>
-              Technologies Used
-            </h4>
-            <div class="flex flex-wrap gap-2">
-              <span
-                v-for="tech in selectedProject.techStack"
-                :key="tech"
-                class="px-4 py-2 text-sm font-medium rounded-lg border bg-slate-50 text-violet-600 border-slate-200 dark:bg-slate-800 dark:text-violet-300 dark:border-slate-700"
-              >
-                {{ tech }}
-              </span>
+              </div>
+              <div class="gallery-nav-row">
+                <button class="btn btn-secondary btn-sm" @click="prevImage" aria-label="Previous image">
+                  &larr; Prev
+                </button>
+                <div class="gallery-dots">
+                  <button
+                    v-for="(_, idx) in selectedProject?.gallery"
+                    :key="idx"
+                    @click="setGalleryIndex(idx)"
+                    class="gallery-dot"
+                    :class="{ active: idx === currentGalleryIndex }"
+                    :aria-label="`Go to screenshot ${idx + 1}`"
+                  ></button>
+                </div>
+                <span style="font-size: 0.8125rem; color: var(--text-tertiary); font-weight: 600; font-variant-numeric: tabular-nums;">
+                  {{ currentGalleryIndex + 1 }} / {{ selectedProject?.gallery.length }}
+                </span>
+                <button class="btn btn-secondary btn-sm" @click="nextImage">
+                  Next &rarr;
+                </button>
+              </div>
             </div>
-          </div>
 
-          <!-- Action Buttons -->
-          <div
-            class="flex flex-wrap gap-4 border-t pt-6 border-slate-200 dark:border-slate-800"
-          >
-            <a
-              v-if="selectedProject.demoUrl && selectedProject.demoUrl !== '#'"
-              :href="selectedProject.demoUrl"
-              target="_blank"
-              class="px-6 py-3 font-bold rounded-xl transition-colors flex items-center gap-2 bg-gradient-to-r from-violet-500 to-indigo-500 hover:from-violet-400 hover:to-indigo-400 text-white"
-            >
-              View Live Demo
-            </a>
-            <a
-              v-if="
-                selectedProject.githubUrl && selectedProject.githubUrl !== '#'
-              "
-              :href="selectedProject.githubUrl"
-              target="_blank"
-              class="px-6 py-3 font-semibold rounded-xl border transition-colors flex items-center gap-2 bg-slate-50 hover:bg-slate-100 text-slate-700 border-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-white dark:border-slate-600"
-            >
-              Source Code
-            </a>
-            <!-- Internal Project Message -->
-            <p
-              v-if="
-                (!selectedProject.demoUrl || selectedProject.demoUrl === '#') &&
-                (!selectedProject.githubUrl ||
-                  selectedProject.githubUrl === '#')
-              "
-              class="italic text-sm flex items-center gap-2 text-slate-400 dark:text-slate-500"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                class="h-5 w-5"
-                viewBox="0 0 20 20"
-                fill="currentColor"
-              >
-                <path
-                  fill-rule="evenodd"
-                  d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z"
-                  clip-rule="evenodd"
-                />
-              </svg>
-              Proprietary internal system. Source code and live demo are
-              restricted.
-            </p>
+            <div>
+              <span class="meta-text" style="text-transform: uppercase; letter-spacing: 0.04em; color: var(--primary-600); font-weight: 700;">
+                {{ selectedProject?.category }}
+              </span>
+              <p style="margin-top: 8px; font-size: 0.9375rem; line-height: 1.6; color: var(--text-secondary);">
+                {{ selectedProject?.description }}
+              </p>
+            </div>
+
+            <div>
+              <span class="meta-text" style="font-weight: 700; color: var(--text-primary); display: block; margin-bottom: 8px;">
+                Tech Stack
+              </span>
+              <div class="pill-tags-wrap" style="border: none; padding: 0;">
+                <span
+                  v-for="tech in selectedProject?.techStack"
+                  :key="tech"
+                  class="tag-chip"
+                >
+                  {{ tech }}
+                </span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
-    </div>
-  </main>
+    </Teleport>
+
+    <!-- Toast Notification (DESIGN.md Section 5 & 6) -->
+    <Teleport to="body">
+      <div class="fixed bottom-6 right-6 z-50 flex flex-col gap-2.5 pointer-events-none">
+        <transition name="toast-slide">
+          <div
+            v-if="toastVisible"
+            class="bg-surface-card border border-border-strong rounded-md px-4 py-3 shadow-lg flex items-center gap-2.5 text-sm font-semibold text-text-primary pointer-events-auto"
+          >
+            <svg class="w-4 h-4 text-success-500 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+            <span>{{ toastMessage }}</span>
+          </div>
+        </transition>
+      </div>
+    </Teleport>
+  </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from "vue";
+import { ref, computed, onMounted, onUnmounted } from "vue";
 
-useHead({
-  title: "Tito Adhitya Pratama | Front-End Developer",
-  meta: [
-    {
-      name: "description",
-      content:
-        "Portfolio of Tito Adhitya Pratama, a Front-End Developer based in West Jakarta specializing in Vue.js and Tailwind CSS.",
-    },
-    {
-      property: "og:title",
-      content: "Tito Adhitya Pratama | Front-End Developer",
-    },
-    {
-      property: "og:description",
-      content:
-        "Explore my projects, skills, and experience in building modern, responsive web interfaces.",
-    },
-    { property: "og:image", content: "/images/preview.png" },
-    { property: "og:type", content: "website" },
-    { name: "twitter:card", content: "summary_large_image" },
-    {
-      name: "twitter:title",
-      content: "Tito Adhitya Pratama | Front-End Developer",
-    },
-    {
-      name: "twitter:description",
-      content:
-        "Explore my projects, skills, and experience in building modern, responsive web interfaces.",
-    },
-    { name: "twitter:image", content: "/images/preview.png" },
-  ],
-  link: [{ rel: "icon", type: "image/svg+xml", href: "/favicon.svg" }],
-});
-
-// --- DARK MODE ---
-const isDark = ref(true);
-
-const toggleDark = () => {
-  isDark.value = !isDark.value;
-  localStorage.setItem("theme", isDark.value ? "dark" : "light");
-  updateHtmlClass();
-};
-
-const updateHtmlClass = () => {
-  if (isDark.value) {
-    document.documentElement.classList.add("dark");
-  } else {
-    document.documentElement.classList.remove("dark");
-  }
-};
-
-onMounted(() => {
-  const saved = localStorage.getItem("theme");
-  if (saved === "light") {
-    isDark.value = false;
-  } else if (saved === "dark") {
-    isDark.value = true;
-  } else {
-    // Default to system preference
-    isDark.value = window.matchMedia("(prefers-color-scheme: dark)").matches;
-  }
-  updateHtmlClass();
-});
-
-// --- DATA PROFIL ---
-interface Profile {
-  name: string;
-  role: string;
-  tagline: string;
-  description: string;
-  skills: string[];
-}
-
-const userProfile: Profile = {
-  name: "Tito Adhitya Pratama",
-  role: "Front-End Developer",
-  tagline: "Code, Learn and Build",
-  description: "Developing responsive, interactive, and modern interfaces.",
-  skills: ["Vue.js", "Tailwind CSS", "JavaScript", "Nuxt.js"],
-};
-
-// Skill badge color classes — each skill gets a unique accent color
-const skillColors = [
-  // Vue.js — Emerald
-  "bg-emerald-50 border border-emerald-200 text-emerald-700 hover:bg-emerald-500 hover:text-white hover:border-emerald-500 hover:shadow-[0_0_15px_rgba(16,185,129,0.5)] dark:bg-emerald-500/10 dark:border-emerald-500/30 dark:text-emerald-400 dark:hover:bg-emerald-500 dark:hover:text-white dark:hover:border-emerald-500",
-  // Tailwind — Cyan
-  "bg-cyan-50 border border-cyan-200 text-cyan-700 hover:bg-cyan-500 hover:text-white hover:border-cyan-500 hover:shadow-[0_0_15px_rgba(6,182,212,0.5)] dark:bg-cyan-500/10 dark:border-cyan-500/30 dark:text-cyan-400 dark:hover:bg-cyan-500 dark:hover:text-white dark:hover:border-cyan-500",
-  // JavaScript — Amber
-  "bg-amber-50 border border-amber-200 text-amber-700 hover:bg-amber-500 hover:text-white hover:border-amber-500 hover:shadow-[0_0_15px_rgba(245,158,11,0.5)] dark:bg-amber-500/10 dark:border-amber-500/30 dark:text-amber-400 dark:hover:bg-amber-500 dark:hover:text-white dark:hover:border-amber-500",
-  // Nuxt — Violet
-  "bg-violet-50 border border-violet-200 text-violet-700 hover:bg-violet-500 hover:text-white hover:border-violet-500 hover:shadow-[0_0_15px_rgba(139,92,246,0.5)] dark:bg-violet-500/10 dark:border-violet-500/30 dark:text-violet-400 dark:hover:bg-violet-500 dark:hover:text-white dark:hover:border-violet-500",
-];
-
-const displayedRole = ref("");
-
-onMounted(() => {
-  let i = 0;
-  const speed = 100;
-  const typeWriter = setInterval(() => {
-    if (i < userProfile.role.length) {
-      displayedRole.value += userProfile.role.charAt(i);
-      i++;
-    } else {
-      clearInterval(typeWriter);
-    }
-  }, speed);
-});
-
-// --- DATA PROYEK ---
+// --- Project Interface ---
 interface Project {
   id: number;
   title: string;
   category: string;
+  categoryType: "internal" | "spa";
+  context: string;
   image: string;
   gallery: string[];
   description: string;
   techStack: string[];
-  demoUrl?: string;
-  githubUrl?: string;
+  highlights?: string[];
 }
 
-const isModalOpen = ref(false);
-const selectedProject = ref<Project | null>(null);
+// --- Navigation Items ---
+const navItems = [
+  { id: "projects", label: "Projects" },
+  { id: "skills", label: "Skills" },
+  { id: "experience", label: "Experience" },
+  { id: "about", label: "About" },
+  { id: "contact", label: "Contact" },
+];
 
-const currentImageIndex = ref(0);
+// --- Filter System ---
+const filters = [
+  { label: "All Projects (3)", value: "all" },
+  { label: "Internal Systems", value: "internal" },
+  { label: "Web Applications", value: "spa" },
+];
+const activeFilter = ref("all");
 
-const projects = ref<Project[]>([
+// --- Real Project Data Matching CV ---
+const projects: Project[] = [
   {
     id: 1,
-    title: "DapurGo",
+    title: "DapurGo, Internal Ordering and Staff System",
     category: "Internal Web System",
+    categoryType: "internal",
+    context: "PT. Daya Gagas Internasional (4 months internship)",
     image: "/images/dapurgo-1.png",
     gallery: [
       "/images/dapurgo-1.png",
@@ -941,15 +914,21 @@ const projects = ref<Project[]>([
       "/images/dapurgo-4.png",
     ],
     description:
-      "An internal web application developed during my internship for employee management and a centralized food ordering system. Features include responsive interfaces, RESTful API integration for CRUD operations, and data management for products and suppliers.",
-    techStack: ["Vue.js", "JavaScript", "REST API", "Tailwind CSS"],
-    demoUrl: "#",
-    githubUrl: "#",
+      "Internal web application for meal ordering and inventory management. Implemented responsive interfaces in Vue.js and JavaScript from Figma designs. Built CRUD features for product, dish, and supplier modules with RESTful API integration. Maintained reusable Vue components across dashboard views and collaborated via GitLab and ClickUp in an agile team.",
+    techStack: ["Vue.js", "JavaScript", "Tailwind CSS", "REST API", "GitLab", "ClickUp"],
+    highlights: [
+      "Built responsive pages for the DapurGo web app using Vue.js and JavaScript based on Figma prototypes.",
+      "Implemented CRUD features for Product, Dish, and Supplier modules with RESTful API integration.",
+      "Developed reusable Vue components to maintain UI consistency across multiple dashboard pages.",
+      "Collaborated via GitLab, ClickUp, and Google Meet in a cross-functional agile team.",
+    ],
   },
   {
     id: 2,
-    title: "Laboratory Inventory Management",
+    title: "Laboratory Inventory Management System",
     category: "Single Page Application (SPA)",
+    categoryType: "spa",
+    context: "Senior High School 53 Jakarta, Computer Lab",
     image: "/images/inventaris-1.png",
     gallery: [
       "/images/inventaris-1.png",
@@ -958,14 +937,20 @@ const projects = ref<Project[]>([
       "/images/inventaris-4.png",
     ],
     description:
-      "A web-based SPA built to replace manual asset tracking. It features Role-Based Access Control (RBAC), asset CRUD, loan management, a dark mode interface, and automated PDF/CSV reporting.",
-    techStack: ["Vue.js", "Laravel", "Inertia.js", "Tailwind CSS", "MySQL"],
-    githubUrl: "#",
+      "Web SPA replacing manual asset tracking with CRUD operations, loan management, and asset history logs. Includes role-based access control, Chart.js analytics dashboard, dark mode, and PDF/CSV data exports.",
+    techStack: ["Vue.js", "Laravel", "Inertia.js", "Tailwind CSS", "MySQL", "Chart.js"],
+    highlights: [
+      "Built a web-based SPA replacing manual asset tracking with CRUD, loan management, and asset history logging.",
+      "Implemented Role-Based Access Control (RBAC) with secure session handling.",
+      "Built interactive Chart.js analytics dashboard, dark mode toggle, and automated PDF and CSV export functionality.",
+    ],
   },
   {
     id: 3,
-    title: "ClipSync — Real-Time Local Network Clipboard Sharing",
+    title: "ClipSync, Local Network Clipboard and File Sharing",
     category: "Real-Time Web Application",
+    categoryType: "spa",
+    context: "Personal Open-Source Project",
     image: "/images/clipsync-1.png",
     gallery: [
       "/images/clipsync-1.png",
@@ -974,224 +959,674 @@ const projects = ref<Project[]>([
       "/images/clipsync-4.png",
     ],
     description:
-      "A real-time clipboard sharing application designed for seamless text and file transfer between devices connected to the same local network. The system employs a room-based architecture where users can join shared sessions via Room ID or QR Code to exchange clipboard content instantly through WebSocket connections. Key capabilities include persistent clipboard history with automatic 24-hour expiration, file upload and download support (up to 50 MB), and Redis-backed pub/sub messaging for reliable real-time synchronization. The project is structured as a pnpm monorepo with shared TypeScript types across the server and client, and is fully containerized for streamlined deployment via Docker Compose.",
-    techStack: [
-      "Vue.js",
-      "Nuxt",
-      "Bun",
-      "Redis",
-      "Typescript",
-      "Docker",
-      "Tailwind CSS",
+      "Real-time clipboard and file sharing tool for devices on the same local network without external internet. Features multi-room sessions with QR code pairing, instant WebSocket synchronization, file uploads up to 50 MB, and auto-expiring storage backed by Redis pub/sub and Docker.",
+    techStack: ["Vue.js", "Nuxt", "Bun", "Redis", "TypeScript", "Docker"],
+    highlights: [
+      "Created a real-time clipboard and file sharing app for devices on the same local network using WebSocket and Redis pub/sub.",
+      "Supports multi-room sessions with QR Code access and real-time sync via WebSocket.",
+      "Handles file uploads up to 50 MB with auto-expiring storage.",
+      "Containerized backend service using Docker and Bun runtime for high throughput.",
     ],
-    githubUrl: "#",
   },
-]);
+];
 
-// Fungsi Buka Modal
+const filteredProjects = computed(() => {
+  if (activeFilter.value === "all") return projects;
+  return projects.filter((p) => p.categoryType === activeFilter.value);
+});
+
+// --- Theme State (Warm Dark Mode) ---
+const isDark = ref(false);
+
+const toggleTheme = () => {
+  isDark.value = !isDark.value;
+  localStorage.setItem("theme-preference", isDark.value ? "dark" : "light");
+  applyTheme();
+};
+
+const applyTheme = () => {
+  if (isDark.value) {
+    document.documentElement.classList.add("dark");
+    document.documentElement.setAttribute("data-theme", "dark");
+  } else {
+    document.documentElement.classList.remove("dark");
+    document.documentElement.removeAttribute("data-theme");
+  }
+};
+
+// --- Scroll State & Scrollspy ---
+const isScrolled = ref(false);
+const activeSection = ref("projects");
+
+const onScroll = () => {
+  isScrolled.value = window.scrollY > 20;
+
+  const sectionIds = ["projects", "skills", "experience", "about", "contact"];
+  let current = "projects";
+  for (const id of sectionIds) {
+    const el = document.getElementById(id);
+    if (el) {
+      const rect = el.getBoundingClientRect();
+      if (rect.top <= 140 && rect.bottom >= 140) {
+        current = id;
+        break;
+      }
+    }
+  }
+  activeSection.value = current;
+};
+
+// --- Mobile Menu State ---
+const isMobileMenuOpen = ref(false);
+
+const handleResize = () => {
+  if (window.innerWidth >= 768 && isMobileMenuOpen.value) {
+    isMobileMenuOpen.value = false;
+  }
+};
+
+// --- Modal Gallery State ---
+const isModalOpen = ref(false);
+const selectedProject = ref<Project | null>(null);
+const currentGalleryIndex = ref(0);
+const isGalleryCrossfading = ref(false);
+
+const isCurrentMobileShot = computed(() => {
+  if (!selectedProject.value) return false;
+  const currentImg = selectedProject.value.gallery[currentGalleryIndex.value];
+  return Boolean(currentImg && currentImg.includes("clipsync-3"));
+});
+
 const openModal = (project: Project) => {
   selectedProject.value = project;
-  currentImageIndex.value = 0;
+  currentGalleryIndex.value = 0;
   isModalOpen.value = true;
   document.body.style.overflow = "hidden";
 };
 
-// Fungsi Tutup Modal
 const closeModal = () => {
   isModalOpen.value = false;
+  document.body.style.overflow = "auto";
   setTimeout(() => {
     selectedProject.value = null;
-  }, 300);
-  document.body.style.overflow = "auto";
+  }, 200);
 };
 
-// Fungsi geser gambar (Next & Prev)
+const setGalleryIndex = (idx: number) => {
+  if (currentGalleryIndex.value === idx) return;
+  isGalleryCrossfading.value = true;
+  setTimeout(() => {
+    currentGalleryIndex.value = idx;
+    isGalleryCrossfading.value = false;
+  }, 100);
+};
+
 const nextImage = () => {
-  if (selectedProject.value) {
-    currentImageIndex.value =
-      (currentImageIndex.value + 1) % selectedProject.value.gallery.length;
-  }
+  if (!selectedProject.value) return;
+  const total = selectedProject.value.gallery.length;
+  setGalleryIndex((currentGalleryIndex.value + 1) % total);
 };
 
 const prevImage = () => {
-  if (selectedProject.value) {
-    currentImageIndex.value =
-      (currentImageIndex.value - 1 + selectedProject.value.gallery.length) %
-      selectedProject.value.gallery.length;
-  }
+  if (!selectedProject.value) return;
+  const total = selectedProject.value.gallery.length;
+  setGalleryIndex((currentGalleryIndex.value - 1 + total) % total);
 };
 
-// --- LOGIKA COPY EMAIL ---
+// --- Toast Notification System ---
+const toastVisible = ref(false);
+const toastMessage = ref("");
+let toastTimeout: any = null;
+
+const triggerToast = (msg: string) => {
+  toastMessage.value = msg;
+  toastVisible.value = true;
+  if (toastTimeout) clearTimeout(toastTimeout);
+  toastTimeout = setTimeout(() => {
+    toastVisible.value = false;
+  }, 3500);
+};
+
+// --- Copy Actions ---
 const emailCopied = ref(false);
+const phoneCopied = ref(false);
 
 const copyEmail = async () => {
   try {
     await navigator.clipboard.writeText("tapwrk1@gmail.com");
     emailCopied.value = true;
-
+    triggerToast("Email address copied: tapwrk1@gmail.com");
     setTimeout(() => {
       emailCopied.value = false;
     }, 2000);
-  } catch (err) {
-    console.error("Gagal menyalin email", err);
+  } catch {
+    triggerToast("Email copied: tapwrk1@gmail.com");
   }
 };
 
-// --- LOGIKA SCROLL TO TOP ---
-const showScrollTop = ref(false);
-
-const checkScroll = () => {
-  showScrollTop.value = window.scrollY > 400;
+const copyPhone = async () => {
+  try {
+    await navigator.clipboard.writeText("+6281318190212");
+    phoneCopied.value = true;
+    triggerToast("Phone number copied: +62 813 1819 0212");
+    setTimeout(() => {
+      phoneCopied.value = false;
+    }, 2000);
+  } catch {
+    triggerToast("Phone copied: +62 813 1819 0212");
+  }
 };
 
-const scrollToTop = () => {
-  window.scrollTo({ top: 0, behavior: "smooth" });
+// --- Form State ---
+const form = ref({
+  name: "",
+  email: "",
+  message: "",
+});
+const isSubmitting = ref(false);
+
+const submitMessage = () => {
+  isSubmitting.value = true;
+  setTimeout(() => {
+    isSubmitting.value = false;
+    triggerToast("Thank you! Your message draft has been prepared.");
+    form.value = { name: "", email: "", message: "" };
+  }, 350);
 };
 
-onMounted(() => {
-  window.addEventListener("scroll", checkScroll);
-});
-
-onUnmounted(() => {
-  window.removeEventListener("scroll", checkScroll);
-});
+// --- Lifecycle Hooks & Intersection Observer ---
+let revealObserver: IntersectionObserver | null = null;
 
 onMounted(() => {
-  const revealObserver = new IntersectionObserver(
-    (entries) => {
+  // Theme initialization: default to light mode for new visitors, preserve previous preference
+  const saved = localStorage.getItem("theme-preference");
+  isDark.value = saved === "dark";
+  applyTheme();
+
+  // Scroll & Resize listeners
+  window.addEventListener("scroll", onScroll, { passive: true });
+  window.addEventListener("resize", handleResize, { passive: true });
+
+  // Keyboard Escape for Modal
+  window.addEventListener("keydown", (e: KeyboardEvent) => {
+    if (e.key === "Escape" && isModalOpen.value) {
+      closeModal();
+    }
+  });
+
+  // IntersectionObserver for once-only reveal per DESIGN.md Section 6
+  revealObserver = new IntersectionObserver(
+    (entries, observer) => {
       entries.forEach((entry) => {
         if (entry.isIntersecting) {
-          entry.target.classList.add("active");
-        } else {
-          entry.target.classList.remove("active");
+          entry.target.classList.add("revealed");
+          observer.unobserve(entry.target);
         }
       });
     },
     {
-      threshold: 0.15,
-    },
+      threshold: 0.1,
+      rootMargin: "0px 0px -40px 0px",
+    }
   );
 
-  document.querySelectorAll(".reveal").forEach((el) => {
-    revealObserver.observe(el);
+  document.querySelectorAll(".reveal-item").forEach((el) => {
+    revealObserver?.observe(el);
   });
+});
+
+onUnmounted(() => {
+  window.removeEventListener("scroll", onScroll);
+  window.removeEventListener("resize", handleResize);
+  revealObserver?.disconnect();
 });
 </script>
 
-<!-- Global styles (unscoped) for dark mode background -->
 <style>
-html {
-  scroll-behavior: smooth;
+/* ============================================================
+   DESIGN.md System Tokens (Warm Minimalist Theme)
+   Zero gradients, solid colors, WCAG AA compliant.
+   ============================================================ */
+:root {
+  --bg: #FAF7F2;
+  --surface: #FAF7F2;
+  --surface-card: #FFFFFF;
+  --surface-muted: #F3EFEA;
+  --surface-hover: #EDE6DD;
+  --border: #E7E0D6;
+  --border-strong: #D9D0C3;
+  --overlay: rgba(38, 33, 28, 0.6);
+
+  --text-primary: #26211C;
+  --text-secondary: #655D54;
+  --text-tertiary: #8C8276;
+  --text-disabled: #A69E90;
+  --text-on-accent: #FFFFFF;
+
+  --primary-50: #FFF4ED;
+  --primary-100: #FFE4D3;
+  --primary-500: #F97316;
+  --primary-600: #EA580C;
+  --primary-700: #C2410C;
+  --primary-800: #9A3412;
+
+  --success-50: #EDF8F2;
+  --success-500: #2E8B57;
+  --success-600: #195B36;
+
+  --info-50: #EEF5FC;
+  --info-500: #2B70C9;
+  --info-600: #1C4B88;
+
+  --radius-xs: 4px;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 20px;
+
+  --shadow-sm: 0 1px 3px rgba(38, 33, 28, 0.05), 0 1px 2px rgba(38, 33, 28, 0.03);
+  --shadow-md: 0 6px 16px rgba(38, 33, 28, 0.07), 0 2px 4px rgba(38, 33, 28, 0.04);
+  --shadow-lg: 0 16px 36px rgba(38, 33, 28, 0.12), 0 4px 8px rgba(38, 33, 28, 0.06);
+
+  --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
-/* Smooth transition for dark mode switch */
-*,
-*::before,
-*::after {
-  transition-property: background-color, border-color, color;
-  transition-duration: 300ms;
-  transition-timing-function: ease;
+html.dark,
+[data-theme="dark"] {
+  --bg: #1C1915;
+  --surface: #1C1915;
+  --surface-card: #26221D;
+  --surface-muted: #302B25;
+  --surface-hover: #38322B;
+  --border: #3D3730;
+  --border-strong: #544C42;
+  --overlay: rgba(10, 8, 6, 0.75);
+
+  --text-primary: #F2ECE3;
+  --text-secondary: #C4BBAE;
+  --text-tertiary: #968D80;
+  --text-disabled: #655E54;
+  --text-on-accent: #FFFFFF;
+
+  --primary-50: #332317;
+  --primary-100: #4B311E;
+  --primary-500: #FB923C;
+  --primary-600: #EA580C;
+  --primary-700: #F97316;
+  --primary-800: #C2410C;
+
+  --success-50: #172D21;
+  --success-500: #3EA668;
+  --success-600: #5CB987;
+
+  --info-50: #1A2836;
+  --info-500: #4A8AC9;
+  --info-600: #6AA5DE;
+
+  --shadow-sm: none;
+  --shadow-md: none;
+  --shadow-lg: 0 16px 36px rgba(0, 0, 0, 0.5);
 }
 
-/* Animated background — light mode */
-.bg-animated {
-  background: linear-gradient(-45deg, #f8fafc, #f1f5f9, #ede9fe, #f0fdfa);
-  background-size: 400% 400%;
-  animation: gradientMove 15s ease infinite;
-  transition: background 0.5s ease;
-}
-
-/* Animated background — dark mode */
-html.dark .bg-animated {
-  background: linear-gradient(-45deg, #0f172a, #1e293b, #1a1040, #0f172a);
-  background-size: 400% 400%;
-  animation: gradientMove 15s ease infinite;
-}
-
-@keyframes gradientMove {
-  0% {
-    background-position: 0% 50%;
-  }
-  50% {
-    background-position: 100% 50%;
-  }
-  100% {
-    background-position: 0% 50%;
-  }
-}
-
-/* Gradient text for hero name */
-.gradient-text {
-  background: linear-gradient(135deg, #8b5cf6, #06b6d4, #ec4899, #f59e0b);
-  background-size: 300% 300%;
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  animation: gradientMove 8s ease infinite;
-}
-
-/* Small gradient text for footer */
-.gradient-text-sm {
-  background: linear-gradient(135deg, #8b5cf6, #06b6d4);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  font-weight: 700;
-}
-</style>
-
-<!-- Scoped styles for component-specific animations -->
-<style scoped>
-/* Animasi Muncul untuk Modal */
-.animate-fadeIn {
-  animation: fadeIn 0.3s ease-out forwards;
-}
-
-@keyframes fadeIn {
+/* Animations */
+@keyframes heroFadeUp {
   from {
     opacity: 0;
-    transform: translateY(20px) scale(0.95);
+    transform: translateY(12px);
   }
   to {
     opacity: 1;
-    transform: translateY(0) scale(1);
+    transform: translateY(0);
   }
 }
 
-/* Transisi untuk Tombol Scroll to Top */
-.fade-up-enter-active,
-.fade-up-leave-active {
-  transition:
-    opacity 0.4s ease,
-    transform 0.4s ease;
-}
+.animate-hero-1 { animation: heroFadeUp 250ms var(--ease-out) 40ms both; }
+.animate-hero-2 { animation: heroFadeUp 250ms var(--ease-out) 100ms both; }
+.animate-hero-3 { animation: heroFadeUp 250ms var(--ease-out) 160ms both; }
+.animate-hero-4 { animation: heroFadeUp 250ms var(--ease-out) 220ms both; }
+.animate-hero-aside { animation: heroFadeUp 300ms var(--ease-out) 140ms both; }
 
-.fade-up-enter-from,
-.fade-up-leave-to {
+/* Scroll Reveal */
+.reveal-item {
   opacity: 0;
-  transform: translateY(20px);
+  transform: translateY(14px);
+  transition: opacity 300ms var(--ease-out), transform 300ms var(--ease-out);
+  will-change: opacity, transform;
 }
 
-/* --- ANIMASI SCROLL --- */
-
-.reveal {
-  opacity: 0;
-  transform: translateY(40px);
-  transition: all 0.8s cubic-bezier(0.5, 0, 0, 1);
-}
-
-.reveal.active {
+.reveal-item.revealed {
   opacity: 1;
   transform: translateY(0);
 }
 
-.delay-100 {
-  transition-delay: 100ms;
+/* Project Filter Transition */
+.project-fade-enter-active {
+  transition: opacity 180ms var(--ease-out), transform 180ms var(--ease-out);
 }
-.delay-200 {
-  transition-delay: 200ms;
+.project-fade-enter-from {
+  opacity: 0;
+  transform: translateY(6px);
 }
-.delay-300 {
-  transition-delay: 300ms;
+.project-fade-leave-active {
+  display: none;
+}
+
+/* Toast Transition */
+.toast-slide-enter-active {
+  transition: all 200ms var(--ease-out);
+}
+.toast-slide-leave-active {
+  transition: all 150ms cubic-bezier(0.4, 0, 1, 1);
+}
+.toast-slide-enter-from,
+.toast-slide-leave-to {
+  transform: translateY(16px);
+  opacity: 0;
+}
+
+/* ============================================================
+   Modal Gallery Viewer (Exact match from prototype.html)
+   ============================================================ */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: var(--overlay);
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 200ms cubic-bezier(0.4, 0, 0.2, 1),
+              visibility 200ms;
+}
+
+.modal-overlay.open {
+  opacity: 1;
+  visibility: visible;
+}
+
+.modal-dialog {
+  background-color: var(--surface-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  max-width: 680px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: var(--shadow-lg);
+  transform: scale(0.97) translateY(8px);
+  opacity: 0;
+  transition: transform 300ms cubic-bezier(0.2, 0.8, 0.2, 1),
+              opacity 300ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  display: flex;
+  flex-direction: column;
+}
+
+.modal-overlay.open .modal-dialog {
+  transform: scale(1) translateY(0);
+  opacity: 1;
+}
+
+.modal-header {
+  padding: 20px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border);
+}
+
+.modal-body {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.icon-btn {
+  width: 38px;
+  height: 38px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--surface-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: background-color 150ms, border-color 150ms, color 150ms, transform 150ms;
+}
+
+@media (hover: hover) {
+  .icon-btn:hover {
+    background-color: var(--surface-muted);
+    color: var(--text-primary);
+    border-color: var(--border-strong);
+    transform: translateY(-1px);
+  }
+}
+
+.icon-btn:active {
+  transform: translateY(0) scale(0.97);
+}
+
+.gallery-viewer {
+  width: 100%;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  border: 1px solid var(--border);
+  background-color: var(--surface-muted);
+}
+
+.gallery-img-container {
+  width: 100%;
+  height: 340px;
+  position: relative;
+  overflow: hidden;
+  background-color: var(--surface-muted);
+}
+
+.gallery-img-container.is-mobile-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px 12px;
+}
+
+.gallery-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: opacity 150ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.gallery-img.is-mobile-shot {
+  width: auto;
+  max-width: 100%;
+  height: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  border-radius: var(--radius-md);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.16);
+  border: 1px solid var(--border);
+}
+
+.mobile-badge {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 5;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 8px;
+  border-radius: var(--radius-sm);
+  background-color: var(--surface-card);
+  border: 1px solid var(--border);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  box-shadow: var(--shadow-sm);
+}
+
+.gallery-img.crossfading {
+  opacity: 0.35;
+}
+
+/* Mobile Dropdown Transition */
+.mobile-menu-enter-active,
+.mobile-menu-leave-active {
+  transition: opacity 150ms cubic-bezier(0.2, 0.8, 0.2, 1), transform 150ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.mobile-menu-enter-from,
+.mobile-menu-leave-to {
+  opacity: 0;
+  transform: translateY(-6px);
+}
+
+.gallery-nav-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 14px;
+  background-color: var(--surface-card);
+  border-top: 1px solid var(--border);
+}
+
+.gallery-dots {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.gallery-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 9999px;
+  background-color: var(--border-strong);
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  transition: background-color 150ms, width 150ms;
+}
+
+.gallery-dot.active {
+  background-color: var(--primary-600);
+  width: 20px;
+}
+
+.btn-secondary {
+  background-color: var(--surface-card);
+  border: 1px solid var(--border);
+  color: var(--text-primary);
+  box-shadow: var(--shadow-sm);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  transition: background-color 150ms, border-color 150ms, transform 150ms;
+}
+
+@media (hover: hover) {
+  .btn-secondary:hover {
+    background-color: var(--surface-muted);
+    border-color: var(--border-strong);
+    transform: translateY(-1px);
+  }
+}
+
+.btn-secondary:active {
+  background-color: var(--surface-hover);
+  transform: translateY(0) scale(0.98);
+}
+
+.btn-sm {
+  height: 34px;
+  padding: 0 14px;
+  font-size: 0.875rem;
+}
+
+.pill-tags-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+}
+
+.tag-chip {
+  padding: 4px 10px;
+  background-color: var(--surface-muted);
+  border: 1px solid var(--border);
+  color: var(--text-primary);
+  font-size: 0.75rem;
+  font-weight: 600;
+  border-radius: var(--radius-sm);
+  transition: background-color 150ms, transform 150ms;
+  cursor: default;
+}
+
+@media (hover: hover) {
+  .tag-chip:hover {
+    background-color: var(--surface-hover);
+    transform: translateY(-1px);
+  }
+}
+
+/* Mobile Responsive Modal Overrides */
+@media (max-width: 640px) {
+  .modal-overlay {
+    padding: 12px;
+  }
+
+  .modal-dialog {
+    max-height: 92vh;
+    border-radius: var(--radius-lg);
+  }
+
+  .modal-header {
+    padding: 14px 16px;
+  }
+
+  .modal-body {
+    padding: 16px;
+    gap: 16px;
+  }
+
+  .gallery-img-container {
+    height: 220px;
+  }
+
+  .gallery-img-container.is-mobile-container {
+    height: 310px;
+    padding: 10px;
+  }
+
+  .gallery-nav-row {
+    padding: 8px 10px;
+  }
+
+  .btn-sm {
+    height: 36px;
+    padding: 0 12px;
+  }
+}
+
+/* Reduced Motion Override */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .reveal-item {
+    opacity: 1 !important;
+    transform: none !important;
+  }
 }
 </style>

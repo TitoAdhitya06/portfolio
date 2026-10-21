@@ -1,28 +1,61 @@
 /** @type {import('tailwindcss').Config} */
 export default {
   darkMode: 'class',
-  content: [],
+  content: [
+    './app/**/*.{vue,js,ts,jsx,tsx}',
+    './components/**/*.{vue,js,ts}',
+    './layouts/**/*.vue',
+    './pages/**/*.vue',
+    './plugins/**/*.{js,ts}',
+  ],
   theme: {
     extend: {
       fontFamily: {
-        sans: ['Inter', 'system-ui', 'sans-serif'],
+        sans: ['"Plus Jakarta Sans"', 'system-ui', '-apple-system', 'sans-serif'],
+        mono: ['"JetBrains Mono"', 'ui-monospace', 'monospace'],
       },
-      animation: {
-        'float': 'float 6s ease-in-out infinite',
-        'float-delayed': 'float 8s ease-in-out infinite 2s',
-        'float-slow': 'float 10s ease-in-out infinite 4s',
-        'gradient-x': 'gradient-x 15s ease infinite',
+      colors: {
+        bg: 'var(--bg)',
+        surface: 'var(--surface)',
+        'surface-card': 'var(--surface-card)',
+        'surface-muted': 'var(--surface-muted)',
+        'surface-hover': 'var(--surface-hover)',
+        border: 'var(--border)',
+        'border-strong': 'var(--border-strong)',
+        overlay: 'var(--overlay)',
+        'text-primary': 'var(--text-primary)',
+        'text-secondary': 'var(--text-secondary)',
+        'text-tertiary': 'var(--text-tertiary)',
+        'text-disabled': 'var(--text-disabled)',
+        'text-on-accent': 'var(--text-on-accent)',
+        'primary-50': 'var(--primary-50)',
+        'primary-100': 'var(--primary-100)',
+        'primary-500': 'var(--primary-500)',
+        'primary-600': 'var(--primary-600)',
+        'primary-700': 'var(--primary-700)',
+        'primary-800': 'var(--primary-800)',
+        'success-50': 'var(--success-50)',
+        'success-500': 'var(--success-500)',
+        'success-600': 'var(--success-600)',
+        'info-50': 'var(--info-50)',
+        'info-500': 'var(--info-500)',
+        'info-600': 'var(--info-600)',
       },
-      keyframes: {
-        float: {
-          '0%, 100%': { transform: 'translateY(0px) translateX(0px)' },
-          '33%': { transform: 'translateY(-20px) translateX(10px)' },
-          '66%': { transform: 'translateY(10px) translateX(-10px)' },
-        },
-        'gradient-x': {
-          '0%, 100%': { 'background-position': '0% 50%' },
-          '50%': { 'background-position': '100% 50%' },
-        },
+      boxShadow: {
+        sm: 'var(--shadow-sm)',
+        md: 'var(--shadow-md)',
+        lg: 'var(--shadow-lg)',
+      },
+      borderRadius: {
+        xs: 'var(--radius-xs)',
+        sm: 'var(--radius-sm)',
+        md: 'var(--radius-md)',
+        lg: 'var(--radius-lg)',
+        xl: 'var(--radius-xl)',
+      },
+      transitionTimingFunction: {
+        'ease-out-custom': 'cubic-bezier(0.2, 0.8, 0.2, 1)',
+        'ease-in-custom': 'cubic-bezier(0.4, 0, 1, 1)',
       },
     },
   },
