@@ -1020,31 +1020,64 @@ const onScroll = () => {
 
   if (isManualNav) return;
 
-  // When reached or close to bottom of page, always mark contact as active
+  // 1. Bottom of page threshold (activates contact when reaching end of page)
   const scrollPosition = window.scrollY + window.innerHeight;
   const documentHeight = document.documentElement.scrollHeight;
-  if (scrollPosition >= documentHeight - 60) {
+  if (scrollPosition >= documentHeight - 50) {
     activeSection.value = "contact";
     return;
   }
 
-  // Scan in reverse order: contact -> about -> experience -> skills -> projects
-  const sectionIds = ["contact", "about", "experience", "skills", "projects"];
-  let matched = false;
-  for (const id of sectionIds) {
-    const el = document.getElementById(id);
-    if (el) {
-      const rect = el.getBoundingClientRect();
-      if (rect.top <= 180) {
-        activeSection.value = id;
-        matched = true;
-        break;
+  // 2. Check contact section
+  const contactEl = document.getElementById("contact");
+  if (contactEl && contactEl.getBoundingClientRect().top <= 180) {
+    activeSection.value = "contact";
+    return;
+  }
+
+  // 3. Check experience & about sections
+  const aboutEl = document.getElementById("about");
+  const expEl = document.getElementById("experience");
+  const isDesktop = window.innerWidth >= 1024;
+
+  if (aboutEl && expEl) {
+    const aboutRect = aboutEl.getBoundingClientRect();
+    const expRect = expEl.getBoundingClientRect();
+
+    if (isDesktop) {
+      // On desktop: experience and about sit side-by-side in the same grid.
+      // Highlight experience first when entering the section.
+      // Transition to about once scrolled into the bio/details area (offset by 80px).
+      if (aboutRect.top <= -80 && aboutRect.bottom > 140) {
+        activeSection.value = "about";
+        return;
+      }
+      if (expRect.top <= 180 && expRect.bottom > 140) {
+        activeSection.value = "experience";
+        return;
+      }
+    } else {
+      // On mobile: about is stacked below experience.
+      if (aboutRect.top <= 180) {
+        activeSection.value = "about";
+        return;
+      }
+      if (expRect.top <= 180) {
+        activeSection.value = "experience";
+        return;
       }
     }
   }
-  if (!matched) {
-    activeSection.value = "projects";
+
+  // 4. Check skills section
+  const skillsEl = document.getElementById("skills");
+  if (skillsEl && skillsEl.getBoundingClientRect().top <= 180) {
+    activeSection.value = "skills";
+    return;
   }
+
+  // 5. Default to projects
+  activeSection.value = "projects";
 };
 
 // --- Mobile Menu State ---
