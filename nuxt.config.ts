@@ -4,6 +4,14 @@ export default defineNuxtConfig({
   devtools: { enabled: true },
   modules: ["@nuxtjs/tailwindcss"],
 
+  runtimeConfig: {
+    public: {
+      web3formsAccessKey:
+        process.env.NUXT_PUBLIC_WEB3FORMS_ACCESS_KEY ||
+        "bbaf2b01-5caf-4c6b-b583-6bfbb80cfe06",
+    },
+  },
+
   app: {
     head: {
       htmlAttrs: {

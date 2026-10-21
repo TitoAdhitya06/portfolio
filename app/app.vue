@@ -693,6 +693,16 @@
 
               <!-- Message Draft Form -->
               <form @submit.prevent="submitMessage" class="flex flex-col gap-3 pt-2">
+                <!-- Honeypot anti-spam field -->
+                <input
+                  v-model="botcheck"
+                  type="checkbox"
+                  name="botcheck"
+                  class="hidden"
+                  style="display: none;"
+                  tabindex="-1"
+                  autocomplete="off"
+                />
                 <div>
                   <label for="name" class="block text-xs font-semibold text-text-secondary mb-1">Your name</label>
                   <input
@@ -700,8 +710,9 @@
                     v-model="form.name"
                     type="text"
                     required
+                    :disabled="isSubmitting"
                     placeholder="Your name"
-                    class="w-full h-9 px-3 bg-surface-card border border-border-strong rounded-md text-xs sm:text-sm text-text-primary focus:outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/30"
+                    class="w-full h-9 px-3 bg-surface-card border border-border-strong rounded-md text-xs sm:text-sm text-text-primary focus:outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/30 disabled:opacity-60 disabled:cursor-not-allowed"
                   />
                 </div>
                 <div>
@@ -711,8 +722,9 @@
                     v-model="form.email"
                     type="email"
                     required
+                    :disabled="isSubmitting"
                     placeholder="name@company.com"
-                    class="w-full h-9 px-3 bg-surface-card border border-border-strong rounded-md text-xs sm:text-sm text-text-primary focus:outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/30"
+                    class="w-full h-9 px-3 bg-surface-card border border-border-strong rounded-md text-xs sm:text-sm text-text-primary focus:outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/30 disabled:opacity-60 disabled:cursor-not-allowed"
                   />
                 </div>
                 <div>
@@ -721,17 +733,39 @@
                     id="message"
                     v-model="form.message"
                     required
+                    :disabled="isSubmitting"
                     rows="3"
                     placeholder="Tell me about your team or project..."
-                    class="w-full p-3 bg-surface-card border border-border-strong rounded-md text-xs sm:text-sm text-text-primary focus:outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/30 resize-y"
+                    class="w-full p-3 bg-surface-card border border-border-strong rounded-md text-xs sm:text-sm text-text-primary focus:outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/30 resize-y disabled:opacity-60 disabled:cursor-not-allowed"
                   ></textarea>
                 </div>
                 <button
                   type="submit"
                   :disabled="isSubmitting"
-                  class="w-full h-9 rounded-md bg-primary-600 hover:bg-primary-700 text-white text-xs font-semibold active:scale-95 transition-all duration-150 shadow-sm disabled:opacity-50"
+                  class="w-full h-9 rounded-md bg-primary-600 hover:bg-primary-700 text-white text-xs font-semibold active:scale-95 transition-all duration-150 shadow-sm disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
-                  {{ isSubmitting ? 'Sending...' : 'Send message' }}
+                  <svg
+                    v-if="isSubmitting"
+                    class="animate-spin h-3.5 w-3.5 text-white"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      class="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      stroke-width="4"
+                    ></circle>
+                    <path
+                      class="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    ></path>
+                  </svg>
+                  <span>{{ isSubmitting ? 'Sending...' : 'Send message' }}</span>
                 </button>
               </form>
             </div>
@@ -1187,15 +1221,68 @@ const form = ref({
   email: "",
   message: "",
 });
+const botcheck = ref(false);
 const isSubmitting = ref(false);
 
-const submitMessage = () => {
-  isSubmitting.value = true;
-  setTimeout(() => {
-    isSubmitting.value = false;
-    triggerToast("Thank you! Your message draft has been prepared.");
+const submitMessage = async () => {
+  if (isSubmitting.value) return;
+
+  if (!form.value.name.trim() || !form.value.email.trim() || !form.value.message.trim()) {
+    triggerToast("Please fill in all fields.");
+    return;
+  }
+
+  // Silent reject for bots triggering the honeypot
+  if (botcheck.value) {
+    triggerToast("Thank you! Your message has been sent successfully.");
     form.value = { name: "", email: "", message: "" };
-  }, 350);
+    return;
+  }
+
+  isSubmitting.value = true;
+  try {
+    const config = useRuntimeConfig();
+    const accessKey = (config.public.web3formsAccessKey as string) || "";
+
+    if (!accessKey) {
+      // Fallback: open email client directly if access key is not yet configured
+      const subject = encodeURIComponent(`Portfolio Message from ${form.value.name}`);
+      const body = encodeURIComponent(`From: ${form.value.name} (${form.value.email})\n\n${form.value.message}`);
+      window.location.href = `mailto:tapwrk1@gmail.com?subject=${subject}&body=${body}`;
+      triggerToast("Opening email client to send message to tapwrk1@gmail.com...");
+      form.value = { name: "", email: "", message: "" };
+      return;
+    }
+
+    const response = await fetch("https://api.web3forms.com/submit", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+      body: JSON.stringify({
+        access_key: accessKey,
+        name: form.value.name,
+        email: form.value.email,
+        message: form.value.message,
+        subject: `New portfolio message from ${form.value.name}`,
+        from_name: "Tito Portfolio Website",
+      }),
+    });
+
+    const result = await response.json();
+    if (result.success) {
+      triggerToast("Thank you! Your message has been sent successfully.");
+      form.value = { name: "", email: "", message: "" };
+      botcheck.value = false;
+    } else {
+      triggerToast(result.message || "Failed to send message. Please email tapwrk1@gmail.com directly.");
+    }
+  } catch {
+    triggerToast("Network error. Please email tapwrk1@gmail.com directly.");
+  } finally {
+    isSubmitting.value = false;
+  }
 };
 
 // --- Lifecycle Hooks & Intersection Observer ---
