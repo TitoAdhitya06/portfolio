@@ -1043,6 +1043,7 @@ const projects: Project[] = [
       "/images/clipsync-3.jpg",
       "/images/clipsync-4.png",
     ],
+    github: "https://github.com/TitoAdhitya06/ClipSync",
     description:
       "Real-time clipboard and file sharing tool for devices on the same local network without external internet. Features multi-room sessions with QR code pairing, instant WebSocket synchronization, file uploads up to 50 MB, and auto-expiring storage backed by Redis pub/sub and Docker.",
     techStack: ["Vue.js", "Nuxt", "Bun", "Redis", "TypeScript", "Docker"],
