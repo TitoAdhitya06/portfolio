@@ -140,13 +140,13 @@
             <!-- Headline -->
             <div class="animate-hero-2">
               <h1 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-text-primary tracking-tight leading-[1.12]">
-                Building responsive web applications with clean architecture and fast load times.
+                Building responsive web and native Android applications with clean architecture.
               </h1>
             </div>
 
             <!-- Lead Subtitle (From CV Summary) -->
             <p class="text-base sm:text-lg text-text-secondary leading-relaxed max-w-2xl animate-hero-3">
-              Hi, I'm <strong>Tito Adhitya Pratama</strong>, an entry-level software engineer and recent graduate in Informatics and Computer Engineering Education from State University of Jakarta. I build web applications with Vue.js, JavaScript, and Tailwind CSS, with hands-on full-stack experience using Laravel, Inertia.js, and Nuxt.
+              Hi, I'm <strong>Tito Adhitya Pratama</strong>, an entry-level software engineer and recent graduate in Informatics and Computer Engineering Education from State University of Jakarta. I build web and native Android applications with Vue.js, Kotlin, and Tailwind CSS, with hands-on experience using Laravel, Nuxt, and Jetpack Compose.
             </p>
 
             <!-- Action CTAs -->
@@ -195,7 +195,7 @@
                   <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
                   <polyline points="22 4 12 14.01 9 11.01"></polyline>
                 </svg>
-                <span>Vue.js, Nuxt, and Laravel</span>
+                <span>Vue.js, Nuxt, and Kotlin (Android)</span>
               </div>
 
               <div class="flex items-center gap-1.5">
@@ -303,7 +303,7 @@
             </div>
             <h2 class="text-2xl sm:text-3xl font-bold text-text-primary tracking-tight">Featured projects</h2>
             <p class="text-base text-text-secondary mt-1">
-              Web applications built for production, campus management, and real-time local network sharing.
+              Production systems, web applications, and native mobile software built with clean architecture.
             </p>
           </div>
 
@@ -374,19 +374,32 @@
                     <polyline points="12 5 19 12 12 19"></polyline>
                   </svg>
                 </button>
+                <a
+                  v-if="project.github"
+                  :href="project.github"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="h-9 px-3.5 rounded-md bg-surface-muted hover:bg-surface-card border border-border text-xs font-semibold text-text-primary inline-flex items-center gap-1.5 transition-colors active:scale-95"
+                >
+                  <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor">
+                    <path fill-rule="evenodd" clip-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" />
+                  </svg>
+                  <span>Repository</span>
+                </a>
               </div>
             </div>
 
             <!-- Right Thumbnail (5 Cols) -->
             <div
               @click="openModal(project)"
-              class="lg:col-span-5 bg-surface-muted border border-border rounded-lg p-2 overflow-hidden cursor-pointer group"
+              class="lg:col-span-5 bg-surface-muted border border-border rounded-lg p-2 overflow-hidden cursor-pointer group flex items-center justify-center"
               title="Click to view full screenshot gallery"
             >
               <img
                 :src="project.image"
                 :alt="project.title"
                 class="w-full h-56 sm:h-64 object-cover object-top rounded border border-border group-hover:scale-[1.02] transition-transform duration-300"
+                :class="{ 'max-w-[200px] object-contain': project.categoryType === 'mobile' }"
                 loading="lazy"
               />
             </div>
@@ -408,12 +421,12 @@
           </div>
           <h2 class="text-2xl sm:text-3xl font-bold text-text-primary tracking-tight">Technical stack and skills</h2>
           <p class="text-base text-text-secondary mt-1">
-            Technologies and tooling I actively work with to ship reliable web systems.
+            Technologies and tooling I actively work with to ship reliable web and mobile systems.
           </p>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
-          <!-- Pillar 1: Frontend Core -->
+          <!-- Pillar 1: Frontend & Mobile Core -->
           <div class="bg-surface-card border border-border rounded-xl p-5 shadow-sm flex flex-col justify-between gap-4 hover:-translate-y-0.5 hover:border-border-strong transition-all duration-200 reveal-item">
             <div>
               <div class="w-10 h-10 rounded-lg bg-surface-muted text-primary-600 flex items-center justify-center mb-3">
@@ -423,13 +436,13 @@
                   <line x1="12" y1="17" x2="12" y2="21"></line>
                 </svg>
               </div>
-              <h3 class="text-base font-bold text-text-primary mb-1">Frontend core</h3>
+              <h3 class="text-base font-bold text-text-primary mb-1">Frontend and mobile</h3>
               <p class="text-xs text-text-secondary leading-relaxed">
-                Component architecture, state management, and responsive interfaces.
+                Component architecture, state management, and responsive interfaces across web and Android.
               </p>
             </div>
             <div class="flex flex-wrap gap-1.5 pt-3 border-t border-border">
-              <span v-for="tag in ['Vue.js', 'Nuxt', 'TypeScript', 'JavaScript', 'HTML/CSS']" :key="tag" class="px-2 py-0.5 rounded bg-surface-muted border border-border text-[11px] font-semibold text-text-primary">
+              <span v-for="tag in ['Vue.js', 'Nuxt', 'Kotlin', 'Jetpack Compose', 'TypeScript']" :key="tag" class="px-2 py-0.5 rounded bg-surface-muted border border-border text-[11px] font-semibold text-text-primary">
                 {{ tag }}
               </span>
             </div>
@@ -470,13 +483,13 @@
                   <line x1="6" y1="9" x2="6" y2="21"></line>
                 </svg>
               </div>
-              <h3 class="text-base font-bold text-text-primary mb-1">Full-stack and backend</h3>
+              <h3 class="text-base font-bold text-text-primary mb-1">Backend and cloud</h3>
               <p class="text-xs text-text-secondary leading-relaxed">
-                RESTful API endpoints, database schemas, Inertia bridges, and Redis messaging.
+                RESTful APIs, relational databases, Cloud Firestore, and Google Drive integration.
               </p>
             </div>
             <div class="flex flex-wrap gap-1.5 pt-3 border-t border-border">
-              <span v-for="tag in ['Laravel', 'Inertia.js', 'MySQL', 'REST API', 'Redis']" :key="tag" class="px-2 py-0.5 rounded bg-surface-muted border border-border text-[11px] font-semibold text-text-primary">
+              <span v-for="tag in ['Laravel', 'Inertia.js', 'MySQL', 'Firebase', 'REST API', 'Redis']" :key="tag" class="px-2 py-0.5 rounded bg-surface-muted border border-border text-[11px] font-semibold text-text-primary">
                 {{ tag }}
               </span>
             </div>
@@ -597,7 +610,7 @@
               <!-- Bio Card -->
               <div class="bg-surface-card border border-border rounded-xl p-6 shadow-sm flex flex-col gap-4 text-sm text-text-secondary leading-relaxed reveal-item">
                 <p>
-                  I build web applications with clear typography, intuitive navigation, and fast interactions. I studied computer engineering education at State University of Jakarta and enjoy turning user requirements into dependable software.
+                  I build responsive web and native Android applications with clear typography, intuitive navigation, and fast interactions. I studied computer engineering education at State University of Jakarta and enjoy turning user requirements into dependable software.
                 </p>
                 <p>
                   Comfortable working in cross-functional teams with Git workflows, agile sprints, and RESTful API integrations. Quick to learn new technologies and focused on building accessible user interfaces.
@@ -865,6 +878,18 @@
               </p>
             </div>
 
+            <!-- Key Engineering Highlights -->
+            <div v-if="selectedProject?.highlights?.length">
+              <span class="meta-text" style="font-weight: 700; color: var(--text-primary); display: block; margin-bottom: 8px;">
+                Key Engineering Highlights
+              </span>
+              <ul class="space-y-2 list-disc list-inside text-xs sm:text-sm text-text-secondary">
+                <li v-for="(highlight, hIdx) in selectedProject.highlights" :key="hIdx" class="leading-relaxed">
+                  {{ highlight }}
+                </li>
+              </ul>
+            </div>
+
             <div>
               <span class="meta-text" style="font-weight: 700; color: var(--text-primary); display: block; margin-bottom: 8px;">
                 Tech Stack
@@ -878,6 +903,25 @@
                   {{ tech }}
                 </span>
               </div>
+            </div>
+
+            <!-- Source Repository Link -->
+            <div v-if="selectedProject?.github" class="pt-2">
+              <a
+                :href="selectedProject.github"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="inline-flex items-center gap-2 px-3.5 py-2 rounded-md bg-surface-muted hover:bg-surface-card border border-border text-xs font-semibold text-text-primary transition-colors"
+              >
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+                  <path fill-rule="evenodd" clip-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" />
+                </svg>
+                <span>View source repository</span>
+                <svg class="w-3.5 h-3.5 text-text-tertiary" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="7" y1="17" x2="17" y2="7"></line>
+                  <polyline points="7 7 17 7 17 17"></polyline>
+                </svg>
+              </a>
             </div>
           </div>
         </div>
@@ -911,13 +955,14 @@ interface Project {
   id: number;
   title: string;
   category: string;
-  categoryType: "internal" | "spa";
+  categoryType: "internal" | "spa" | "mobile";
   context: string;
   image: string;
   gallery: string[];
   description: string;
   techStack: string[];
   highlights?: string[];
+  github?: string;
 }
 
 // --- Navigation Items ---
@@ -931,9 +976,10 @@ const navItems = [
 
 // --- Filter System ---
 const filters = [
-  { label: "All Projects (3)", value: "all" },
+  { label: "All Projects (4)", value: "all" },
   { label: "Internal Systems", value: "internal" },
   { label: "Web Applications", value: "spa" },
+  { label: "Mobile Applications", value: "mobile" },
 ];
 const activeFilter = ref("all");
 
@@ -1005,6 +1051,42 @@ const projects: Project[] = [
       "Supports multi-room sessions with QR Code access and real-time sync via WebSocket.",
       "Handles file uploads up to 50 MB with auto-expiring storage.",
       "Containerized backend service using Docker and Bun runtime for high throughput.",
+    ],
+  },
+  {
+    id: 4,
+    title: "SpaceBridge, Cloud-Synced Notes & Direct Google Drive Hub",
+    category: "Native Android Application",
+    categoryType: "mobile",
+    context: "Personal Open-Source Project",
+    image: "/images/SpaceBridge-1.jpeg",
+    gallery: [
+      "/images/SpaceBridge-1.jpeg",
+      "/images/SpaceBridge-2.jpeg",
+      "/images/SpaceBridge-3.jpeg",
+      "/images/SpaceBridge-4.jpeg",
+      "/images/SpaceBridge-5.jpeg",
+      "/images/SpaceBridge-6.jpeg",
+      "/images/SpaceBridge-7.jpeg",
+    ],
+    github: "https://github.com/TitoAdhitya06/SpaceBridge.git",
+    description:
+      "Native Android application bridging local notes with direct Google Drive cloud storage. Solves note isolation across devices and Second Space environments using Cloud Firestore, while eliminating context switching through in-app file cataloging and resilient background uploads using AndroidX WorkManager.",
+    techStack: [
+      "Kotlin",
+      "Jetpack Compose",
+      "Material 3",
+      "Cloud Firestore",
+      "Google Drive API",
+      "WorkManager",
+      "Clean Architecture",
+    ],
+    highlights: [
+      "Built an offline-first architecture with Cloud Firestore syncing notes across multi-device setups and Android Second Space environments.",
+      "Integrated Google Drive REST API v3 for in-app file uploads, catalog browsing, and downloads directly to the /SpaceBridge folder.",
+      "Implemented chunked resumable background uploads (8 MB streaming) using AndroidX WorkManager to survive connection drops and app terminations.",
+      "Designed incremental permission scopes requesting Google Drive access contextually only when entering the file catalog.",
+      "Secured user data end-to-end with granular Firestore Security Rules validated by user UID ownership.",
     ],
   },
 ];
@@ -1132,7 +1214,10 @@ const isGalleryCrossfading = ref(false);
 const isCurrentMobileShot = computed(() => {
   if (!selectedProject.value) return false;
   const currentImg = selectedProject.value.gallery[currentGalleryIndex.value];
-  return Boolean(currentImg && currentImg.includes("clipsync-3"));
+  return Boolean(
+    (currentImg && (currentImg.includes("clipsync-3") || currentImg.includes("spacebridge"))) ||
+    selectedProject.value.categoryType === "mobile"
+  );
 });
 
 const openModal = (project: Project) => {

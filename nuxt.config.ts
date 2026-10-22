@@ -6,9 +6,7 @@ export default defineNuxtConfig({
 
   runtimeConfig: {
     public: {
-      web3formsAccessKey:
-        process.env.NUXT_PUBLIC_WEB3FORMS_ACCESS_KEY ||
-        "bbaf2b01-5caf-4c6b-b583-6bfbb80cfe06",
+      web3formsAccessKey: "bbaf2b01-5caf-4c6b-b583-6bfbb80cfe06",
     },
   },
 
@@ -25,7 +23,7 @@ export default defineNuxtConfig({
         {
           name: "description",
           content:
-            "Portfolio of Tito Adhitya Pratama, an entry-level Software Engineer and Front-End Developer specializing in Vue.js, Nuxt, and Tailwind CSS.",
+            "Portfolio of Tito Adhitya Pratama, an entry-level Software Engineer specializing in Vue.js, Nuxt, and Android (Kotlin).",
         },
         { property: "og:title", content: "Tito Adhitya Pratama | Front-End Developer" },
         {
