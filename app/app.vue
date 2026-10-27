@@ -793,9 +793,6 @@
         <div>
           <strong>Tito Adhitya Pratama</strong>, front-end developer portfolio
         </div>
-        <div>
-          Built with tokens and guidelines from <span class="font-mono text-text-secondary">DESIGN.md</span>.
-        </div>
       </div>
     </footer>
 
