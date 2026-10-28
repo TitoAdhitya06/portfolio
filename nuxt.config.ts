@@ -1,3 +1,16 @@
+import { createHash } from "node:crypto";
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
+
+const cvVersion = (() => {
+  try {
+    const fileBuffer = readFileSync(resolve(process.cwd(), "public/CV_Tito_Adhitya_Pratama.pdf"));
+    return createHash("md5").update(fileBuffer).digest("hex").slice(0, 8);
+  } catch {
+    return Date.now().toString(36);
+  }
+})();
+
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   compatibilityDate: "2025-07-15",
@@ -7,6 +20,15 @@ export default defineNuxtConfig({
   runtimeConfig: {
     public: {
       web3formsAccessKey: "bbaf2b01-5caf-4c6b-b583-6bfbb80cfe06",
+      cvVersion,
+    },
+  },
+
+  routeRules: {
+    "/CV_Tito_Adhitya_Pratama.pdf": {
+      headers: {
+        "Cache-Control": "no-cache, no-store, must-revalidate",
+      },
     },
   },
 

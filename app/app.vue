@@ -163,8 +163,9 @@
               </a>
 
               <a
-                href="/CV_Tito_Adhitya_Pratama.pdf"
+                :href="`/CV_Tito_Adhitya_Pratama.pdf?v=${config.public.cvVersion}`"
                 target="_blank"
+                rel="noopener noreferrer"
                 class="h-10 px-4 rounded-md bg-surface-card hover:bg-surface-muted text-text-primary border border-border hover:border-border-strong text-sm font-semibold inline-flex items-center gap-2 shadow-sm active:scale-95 transition-all duration-150"
               >
                 <svg class="w-4 h-4 text-text-secondary" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -947,6 +948,8 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from "vue";
 
+const config = useRuntimeConfig();
+
 // --- Project Interface ---
 interface Project {
   id: number;
@@ -1324,7 +1327,6 @@ const submitMessage = async () => {
 
   isSubmitting.value = true;
   try {
-    const config = useRuntimeConfig();
     const accessKey = (config.public.web3formsAccessKey as string) || "";
 
     if (!accessKey) {
