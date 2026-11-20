@@ -1,1274 +1,1482 @@
 <template>
-  <div class="min-h-screen bg-bg text-text-primary font-sans antialiased selection:bg-primary-100 selection:text-primary-800">
+  <div
+    class="page-shell bg-drafting-paper"
+    :class="{ 'has-live-paper-grid': isPaperCanvasActive }"
+  >
+    <InteractivePaperGrid
+      :paused="isMotionPaused"
+      @active-change="isPaperCanvasActive = $event"
+    />
+
+    <!-- Skip link for keyboard navigation -->
+    <a
+      href="#main-content"
+      class="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-50 pill-cta px-4 py-2 text-xs"
+    >
+      Skip to content
+    </a>
+
     <!-- ============================================================
-         Header & Navigation
+         Adaptive Sticky Header
          ============================================================ -->
     <header
-      id="navbar"
-      class="sticky top-0 z-50 border-b transition-colors duration-200"
-      :class="isScrolled ? 'bg-surface-card border-border shadow-sm' : 'bg-bg border-border'"
+      ref="headerEl"
+      class="site-header"
+      :class="{ 'on-dark': isHeaderOnDark }"
     >
-      <div class="max-w-[1180px] mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
-        <!-- Brand / Identity -->
-        <a href="#" class="flex items-center gap-2.5 group focus:outline-none">
-          <span class="w-8 h-8 rounded bg-primary-600 text-white text-sm font-bold flex items-center justify-center tracking-tight transition-transform duration-150 group-hover:-translate-y-0.5">
-            TAP
+      <div class="max-w-[1220px] mx-auto px-4 sm:px-6 lg:px-8 h-[68px] flex items-center justify-between gap-4">
+        <!-- Brand -->
+        <a href="#top" class="flex items-center gap-3 min-w-0 group" @click="isMobileMenuOpen = false">
+          <span
+            class="w-9 h-9 rounded-lg flex items-center justify-center font-display font-bold text-lg border-[1.5px] shrink-0 transition-colors"
+            :class="isHeaderOnDark
+              ? 'bg-surface text-ink border-surface'
+              : 'bg-ink text-surface border-ink'"
+            aria-hidden="true"
+          >
+            T
           </span>
-          <div class="flex flex-col">
-            <span class="text-base font-bold text-text-primary leading-tight">Tito A. Pratama</span>
-            <span class="text-[11px] font-semibold text-text-tertiary uppercase tracking-wider">Front-end developer</span>
+          <div class="flex flex-col min-w-0">
+            <span class="font-display font-semibold text-base sm:text-lg leading-tight truncate">
+              {{ profile.shortName }}
+            </span>
+            <span
+              class="text-[11px] font-mono-tabular tracking-wide leading-tight hidden sm:block"
+              :class="isHeaderOnDark ? 'text-on-dark-muted' : 'text-ink-tertiary'"
+            >
+              Web &amp; Native Android · UTC+7
+            </span>
           </div>
         </a>
 
-        <!-- Desktop Navigation Links -->
-        <nav class="hidden md:flex items-center gap-1.5">
+        <!-- Desktop Navigation -->
+        <nav aria-label="Primary navigation" class="hidden md:flex items-center gap-1">
           <a
-            v-for="item in navItems"
+            v-for="item in navLinks"
             :key="item.id"
             :href="`#${item.id}`"
-            @click="setActive(item.id)"
-            class="px-3.5 py-2 text-sm font-medium rounded-md transition-colors duration-150"
-            :class="activeSection === item.id ? 'text-primary-600 font-semibold bg-primary-50' : 'text-text-secondary hover:bg-surface-muted hover:text-text-primary'"
+            class="px-3.5 py-2 rounded-full text-sm font-medium transition-colors"
+            :class="[
+              activeSection === item.id
+                ? (isHeaderOnDark
+                    ? 'bg-dark-surface text-highlighter border border-dark-border font-semibold'
+                    : 'bg-surface text-ink border border-ink font-semibold')
+                : (isHeaderOnDark
+                    ? 'text-on-dark-muted hover:text-on-dark hover:bg-dark-surface'
+                    : 'text-ink-secondary hover:text-ink hover:bg-surface'),
+            ]"
+            @click="handleNavClick(item.id)"
           >
             {{ item.label }}
           </a>
         </nav>
 
-        <!-- Actions -->
-        <div class="flex items-center gap-2">
-          <!-- Theme Toggle -->
+        <!-- Header Controls -->
+        <div class="flex items-center gap-2.5 shrink-0">
+          <!-- WCAG 2.2.2 Motion Pause Control -->
           <button
-            @click="toggleTheme"
-            class="w-9 h-9 rounded-md bg-surface-card border border-border flex items-center justify-center text-text-secondary hover:bg-surface-muted hover:text-text-primary hover:border-border-strong active:scale-95 transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-primary-500/40"
-            :aria-label="isDark ? 'Switch to light mode' : 'Switch to dark mode'"
+            type="button"
+            class="icon-hit-target w-9 h-9 rounded-full border-[1.5px] inline-flex items-center justify-center transition-colors active:scale-95"
+            :class="isHeaderOnDark
+              ? 'border-dark-border bg-dark-surface text-on-dark hover:border-highlighter'
+              : 'border-ink bg-surface text-ink hover:bg-surface-muted'"
+            aria-label="Pause animations"
+            :aria-pressed="isMotionPaused"
+            :title="isMotionPaused ? 'Resume animations' : 'Pause animations'"
+            @click="toggleMotion"
           >
-            <!-- Sun Icon -->
-            <svg v-if="isDark" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="12" cy="12" r="4"></circle>
-              <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"></path>
+            <!-- Play icon when paused, Pause icon when active -->
+            <svg
+              v-if="isMotionPaused"
+              class="w-4 h-4"
+              viewBox="0 0 24 24"
+              fill="currentColor"
+              aria-hidden="true"
+            >
+              <polygon points="7 5 19 12 7 19 7 5" />
             </svg>
-            <!-- Moon Icon -->
-            <svg v-else class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path>
+            <svg
+              v-else
+              class="w-4 h-4"
+              viewBox="0 0 24 24"
+              fill="currentColor"
+              aria-hidden="true"
+            >
+              <rect x="6" y="5" width="4" height="14" rx="1" />
+              <rect x="14" y="5" width="4" height="14" rx="1" />
             </svg>
           </button>
 
-          <!-- Get in Touch CTA (Desktop / Tablet) -->
+          <!-- Primary Header CTA -->
           <a
             href="#contact"
-            @click="setActive('contact')"
-            class="hidden sm:inline-flex items-center gap-1.5 h-9 px-4 rounded-md bg-primary-600 text-white text-sm font-semibold hover:bg-primary-700 active:scale-95 transition-all duration-150 shadow-sm"
+            class="pill-cta h-9 px-4 text-xs sm:text-sm hidden sm:inline-flex"
+            @click="handleNavClick('contact')"
           >
             <span>Get in touch</span>
-            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-              <line x1="7" y1="17" x2="17" y2="7"></line>
-              <polyline points="7 7 17 7 17 17"></polyline>
+            <svg class="w-3.5 h-3.5 translate-y-[0.5px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M5 12h14" />
+              <path d="m12 5 7 7-7 7" />
             </svg>
           </a>
 
-          <!-- Mobile Hamburger Toggle -->
+          <!-- Mobile Drawer Trigger -->
           <button
-            @click="isMobileMenuOpen = !isMobileMenuOpen"
-            class="md:hidden w-9 h-9 rounded-md bg-surface-card border border-border flex items-center justify-center text-text-secondary hover:bg-surface-muted hover:text-text-primary hover:border-border-strong active:scale-95 transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-primary-500/40"
-            :aria-label="isMobileMenuOpen ? 'Close navigation menu' : 'Open navigation menu'"
+            type="button"
+            class="md:hidden icon-hit-target w-9 h-9 rounded-full border-[1.5px] inline-flex items-center justify-center transition-colors active:scale-95"
+            :class="isHeaderOnDark
+              ? 'border-dark-border bg-dark-surface text-on-dark hover:border-highlighter'
+              : 'border-ink bg-surface text-ink hover:bg-surface-muted'"
+            :aria-label="isMobileMenuOpen ? 'Close menu' : 'Open menu'"
             :aria-expanded="isMobileMenuOpen"
+            aria-controls="mobile-nav-panel"
+            @click="isMobileMenuOpen = !isMobileMenuOpen"
           >
-            <svg v-if="isMobileMenuOpen" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-              <line x1="18" y1="6" x2="6" y2="18"></line>
-              <line x1="6" y1="6" x2="18" y2="18"></line>
+            <svg v-if="isMobileMenuOpen" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M18 6 6 18" />
+              <path d="m6 6 12 12" />
             </svg>
-            <svg v-else class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-              <line x1="4" y1="6" x2="20" y2="6"></line>
-              <line x1="4" y1="12" x2="20" y2="12"></line>
-              <line x1="4" y1="18" x2="20" y2="18"></line>
+            <svg v-else class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <line x1="4" y1="7" x2="20" y2="7" />
+              <line x1="4" y1="12" x2="20" y2="12" />
+              <line x1="4" y1="17" x2="20" y2="17" />
             </svg>
           </button>
         </div>
       </div>
 
-      <!-- Mobile Navigation Drawer -->
-      <transition name="mobile-menu">
-        <div
-          v-if="isMobileMenuOpen"
-          class="md:hidden border-t border-border bg-surface-card px-4 pt-2 pb-4 shadow-md flex flex-col gap-1"
+      <!-- Mobile Dropdown Menu -->
+      <div
+        v-if="isMobileMenuOpen"
+        id="mobile-nav-panel"
+        class="md:hidden px-4 pb-4 pt-2 border-t"
+        :class="isHeaderOnDark ? 'border-dark-border bg-dark-ink' : 'border-hairline bg-paper'"
+      >
+        <nav
+          aria-label="Mobile navigation"
+          class="rounded-card border-[1.5px] p-2 flex flex-col gap-1"
+          :class="isHeaderOnDark
+            ? 'bg-dark-surface border-dark-border shadow-[5px_5px_0_var(--highlight)]'
+            : 'bg-surface border-ink shadow-[5px_5px_0_var(--border-strong)]'"
         >
           <a
-            v-for="item in navItems"
+            v-for="item in navLinks"
             :key="item.id"
             :href="`#${item.id}`"
-            @click="setActive(item.id)"
-            class="px-3.5 py-2.5 text-sm font-medium rounded-md transition-colors duration-150 flex items-center justify-between"
-            :class="activeSection === item.id ? 'text-primary-600 font-semibold bg-primary-50' : 'text-text-secondary hover:bg-surface-muted hover:text-text-primary'"
+            class="px-3.5 py-2.5 rounded-inner text-sm font-medium flex items-center justify-between transition-colors"
+            :class="[
+              activeSection === item.id
+                ? (isHeaderOnDark
+                    ? 'bg-dark-ink text-highlighter font-semibold'
+                    : 'bg-highlighter text-ink font-semibold')
+                : (isHeaderOnDark
+                    ? 'text-on-dark-muted hover:text-on-dark hover:bg-dark-ink'
+                    : 'text-ink-secondary hover:text-ink hover:bg-paper'),
+            ]"
+            @click="handleNavClick(item.id)"
           >
             <span>{{ item.label }}</span>
-            <svg v-if="activeSection === item.id" class="w-4 h-4 text-primary-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-              <polyline points="20 6 9 17 4 12"></polyline>
-            </svg>
+            <span class="text-xs font-mono-tabular opacity-75">&rarr;</span>
           </a>
 
-          <div class="pt-2 mt-1 border-t border-border">
+          <div class="pt-2 mt-1 border-t space-y-2" :class="isHeaderOnDark ? 'border-dark-border' : 'border-hairline'">
             <a
               href="#contact"
-              @click="setActive('contact')"
-              class="w-full flex items-center justify-center gap-2 h-9 px-4 rounded-md bg-primary-600 text-white text-sm font-semibold hover:bg-primary-700 active:scale-95 transition-all duration-150 shadow-sm"
+              class="pill-cta h-10 w-full text-sm"
+              :class="{ 'pill-cta-inverted': isHeaderOnDark }"
+              @click="handleNavClick('contact')"
             >
               <span>Get in touch</span>
-              <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                <line x1="7" y1="17" x2="17" y2="7"></line>
-                <polyline points="7 7 17 7 17 17"></polyline>
-              </svg>
+            </a>
+            <a
+              :href="cvHref"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="btn-paper h-10 w-full text-sm"
+            >
+              <span>Download CV (PDF)</span>
             </a>
           </div>
-        </div>
-      </transition>
+        </nav>
+      </div>
     </header>
 
-    <main class="max-w-[1180px] mx-auto px-4 sm:px-6">
+    <main id="main-content" class="flex-1">
       <!-- ============================================================
-           1. Hero Section (Asymmetric Spec Card Layout)
+           1. Editorial Poster Hero (#top)
            ============================================================ -->
-      <section id="hero" class="pt-12 sm:pt-20 pb-16 sm:pb-24">
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-center">
-          <!-- Left Column (Bio & Actions) -->
-          <div class="lg:col-span-7 flex flex-col gap-5">
-            <!-- Availability Pill -->
-            <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-surface-card border border-border shadow-sm w-fit animate-hero-1">
-              <span class="w-2 h-2 rounded-full bg-success-500"></span>
-              <span class="text-xs font-semibold text-text-primary">Available for new opportunities and roles</span>
+      <section id="top" data-paper-zone class="has-margin-rule pt-6 pb-12 sm:pt-10 sm:pb-16 lg:pt-10 lg:pb-16">
+        <div class="max-w-[1220px] mx-auto px-4 sm:px-6 lg:px-8">
+          <!-- Single top editorial registration line -->
+          <div class="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-hairline">
+            <div class="flex items-center gap-2.5 text-xs font-mono-tabular uppercase tracking-wider text-ink-secondary">
+              <span class="w-2 h-2 rounded-full bg-success shrink-0" aria-hidden="true"></span>
+              <span>{{ profile.role }} · {{ profile.location }}</span>
             </div>
-
-            <!-- Headline -->
-            <div class="animate-hero-2">
-              <h1 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-text-primary tracking-tight leading-[1.12]">
-                Building responsive web and native Android applications with clean architecture.
-              </h1>
-            </div>
-
-            <!-- Lead Subtitle (From CV Summary) -->
-            <p class="text-base sm:text-lg text-text-secondary leading-relaxed max-w-2xl animate-hero-3">
-              Hi, I'm <strong>Tito Adhitya Pratama</strong>, an entry-level software engineer and recent graduate in Informatics and Computer Engineering Education from State University of Jakarta. I build web and native Android applications with Vue.js, Kotlin, and Tailwind CSS, with hands-on experience using Laravel, Nuxt, and Jetpack Compose.
-            </p>
-
-            <!-- Action CTAs -->
-            <div class="flex flex-wrap items-center gap-3.5 pt-1 animate-hero-4">
-              <a
-                href="#projects"
-                class="h-10 px-5 rounded-md bg-primary-600 hover:bg-primary-700 text-white text-sm font-semibold inline-flex items-center gap-2 shadow-sm active:scale-95 transition-all duration-150"
-              >
-                <span>View selected works</span>
-                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                  <line x1="5" y1="12" x2="19" y2="12"></line>
-                  <polyline points="12 5 19 12 12 19"></polyline>
-                </svg>
-              </a>
-
-              <a
-                :href="`/CV_Tito_Adhitya_Pratama.pdf?v=${config.public.cvVersion}`"
-                target="_blank"
-                rel="noopener noreferrer"
-                class="h-10 px-4 rounded-md bg-surface-card hover:bg-surface-muted text-text-primary border border-border hover:border-border-strong text-sm font-semibold inline-flex items-center gap-2 shadow-sm active:scale-95 transition-all duration-150"
-              >
-                <svg class="w-4 h-4 text-text-secondary" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                  <polyline points="14 2 14 8 20 8"></polyline>
-                  <line x1="16" y1="13" x2="8" y2="13"></line>
-                  <line x1="16" y1="17" x2="8" y2="17"></line>
-                </svg>
-                <span>Download CV</span>
-              </a>
-
-              <button
-                @click="copyEmail"
-                class="h-10 px-4 rounded-md bg-surface-card hover:bg-surface-muted text-text-secondary border border-border hover:border-border-strong text-sm font-medium inline-flex items-center gap-2 active:scale-95 transition-all duration-150"
-              >
-                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <rect width="14" height="14" x="8" y="8" rx="2" ry="2"></rect>
-                  <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"></path>
-                </svg>
-                <span>{{ emailCopied ? 'Copied' : 'Copy email' }}</span>
-              </button>
-            </div>
-
-            <!-- Quick Trust Anchors -->
-            <div class="flex flex-wrap items-center gap-6 pt-4 border-t border-border text-xs text-text-secondary font-medium animate-hero-4">
-              <div class="flex items-center gap-1.5">
-                <svg class="w-4 h-4 text-success-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-                  <polyline points="22 4 12 14.01 9 11.01"></polyline>
-                </svg>
-                <span>Vue.js, Nuxt, and Kotlin (Android)</span>
-              </div>
-
-              <div class="flex items-center gap-1.5">
-                <svg class="w-4 h-4 text-success-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                  <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
-                </svg>
-                <span>Fast Core Web Vitals</span>
-              </div>
-
-              <div class="flex items-center gap-1.5">
-                <svg class="w-4 h-4 text-primary-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"></path>
-                  <circle cx="12" cy="10" r="3"></circle>
-                </svg>
-                <span>Jakarta Barat, ID (UTC+7)</span>
-              </div>
-            </div>
+            <span class="text-xs font-mono-tabular text-ink-tertiary">
+              Vue.js / Nuxt · Kotlin / Jetpack Compose
+            </span>
           </div>
 
-          <!-- Right Column: Bento Spec Card (Stitch Architecture) -->
-          <div class="lg:col-span-5 flex flex-col gap-4 animate-hero-aside">
-            <div class="bg-surface-card border border-border rounded-xl p-6 shadow-sm flex flex-col gap-4">
-              <!-- Window Bar Header -->
-              <div class="flex items-center justify-between pb-3.5 border-b border-border">
-                <div class="flex items-center gap-1.5">
-                  <span class="w-2.5 h-2.5 rounded-full bg-border-strong"></span>
-                  <span class="w-2.5 h-2.5 rounded-full bg-border-strong"></span>
-                  <span class="w-2.5 h-2.5 rounded-full bg-border-strong"></span>
-                  <span class="font-mono text-xs text-text-tertiary ml-2">system.architect.vue</span>
-                </div>
-                <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-surface-muted border border-border text-text-secondary text-[11px] font-medium tracking-tight">
-                  <span class="w-1.5 h-1.5 rounded-full bg-success-500"></span>
-                  <span>Strict standard</span>
-                </div>
-              </div>
-
-              <!-- Metric Tiles -->
-              <div class="grid grid-cols-2 gap-3">
-                <div class="bg-surface-muted border border-border rounded-lg p-3.5">
-                  <span class="text-xs text-text-tertiary font-medium">Academic merit</span>
-                  <div class="text-2xl font-bold text-text-primary tabular-nums mt-0.5">3.77 / 4.00</div>
-                  <span class="text-xs text-text-secondary">GPA, UNJ Graduate</span>
-                </div>
-                <div class="bg-surface-muted border border-border rounded-lg p-3.5">
-                  <span class="text-xs text-text-tertiary font-medium">Industry intern</span>
-                  <div class="text-2xl font-bold text-text-primary tabular-nums mt-0.5">4 Months</div>
-                  <span class="text-xs text-text-secondary">PT. Daya Gagas</span>
-                </div>
-              </div>
-
-              <!-- Accessibility Card -->
-              <div class="bg-surface-muted border border-border rounded-lg p-3.5 flex items-center justify-between">
-                <div class="flex items-center gap-3">
-                  <div class="w-8 h-8 rounded bg-surface-card border border-border flex items-center justify-center text-primary-600">
-                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <circle cx="12" cy="4" r="2"></circle>
-                      <path d="m4.93 10.93 4.24-4.24a2 2 0 0 1 2.83 0l4.24 4.24"></path>
-                      <path d="M12 10v10"></path>
-                      <path d="m8 16 4 4 4-4"></path>
-                    </svg>
-                  </div>
-                  <div>
-                    <h4 class="text-sm font-bold text-text-primary">100% WCAG AA standard</h4>
-                    <p class="text-xs text-text-secondary">Semantic, keyboard-navigable, clean DOM</p>
-                  </div>
-                </div>
-                <svg class="w-5 h-5 text-success-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-                  <polyline points="22 4 12 14.01 9 11.01"></polyline>
+          <!-- Display Poster Statement -->
+          <div class="pt-6 pb-7 sm:pt-8 sm:pb-9 lg:pt-8 lg:pb-10">
+            <h1 class="font-display font-semibold text-ink tracking-[-0.03em] leading-[0.96] text-[clamp(2.65rem,6.1vw,5.4rem)] max-w-[15ch] text-balance">
+              Building
+              <span class="relative inline-block">
+                <span>fast web</span>
+                <svg
+                  class="pen-stroke js-scroll-mark absolute left-0 -bottom-1.5 sm:-bottom-2 w-full h-3 sm:h-4 text-vermilion pointer-events-none"
+                  viewBox="0 0 260 18"
+                  fill="none"
+                  preserveAspectRatio="none"
+                  aria-hidden="true"
+                >
+                  <path
+                    d="M3 13 C 62 4, 184 5, 257 12"
+                    stroke="currentColor"
+                    stroke-width="3.2"
+                    stroke-linecap="round"
+                    pathLength="1"
+                  />
                 </svg>
-              </div>
+              </span>
+              interfaces and
+              <span class="hl-sweep js-scroll-mark font-semibold">native Android</span>
+              apps.
+            </h1>
+          </div>
 
-              <!-- Engineering Philosophy Quote -->
-              <div class="bg-surface-muted border border-border rounded-lg p-3.5 flex items-start gap-3">
-                <svg class="w-5 h-5 text-primary-600 flex-shrink-0 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <polyline points="4 17 10 11 4 5"></polyline>
-                  <line x1="12" y1="19" x2="20" y2="19"></line>
-                </svg>
-                <div>
-                  <p class="text-xs text-text-primary italic leading-relaxed">
-                    "Clean code loads fast, keeps interfaces accessible, and makes maintenance predictable."
-                  </p>
-                  <p class="text-[11px] text-text-tertiary font-semibold mt-1">
-                    Engineering principle
-                  </p>
-                </div>
+          <!-- Bottom Hero Split: Bio & CTAs Left / Tilted Quick-Spec Card Right -->
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-end pt-6 border-t border-hairline">
+            <div class="lg:col-span-7 space-y-5">
+              <p class="text-base sm:text-lg lg:text-[19px] text-ink-secondary leading-relaxed max-w-[58ch] text-pretty">
+                I'm <strong class="font-semibold text-ink">{{ profile.name }}</strong>. I build responsive web systems in Vue.js, Nuxt, and Laravel alongside offline-capable native Android applications in Kotlin and Jetpack Compose.
+              </p>
+
+              <div class="flex flex-wrap items-center gap-3.5">
+                <a href="#works" class="pill-cta h-11 px-6 text-sm">
+                  <span>Explore works</span>
+                  <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M12 5v14" />
+                    <path d="m19 12-7 7-7-7" />
+                  </svg>
+                </a>
+
+                <a
+                  :href="cvHref"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="btn-paper h-11 px-5 text-sm"
+                >
+                  <svg class="w-4 h-4 text-ink-secondary" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                    <polyline points="14 2 14 8 20 8" />
+                    <line x1="16" y1="13" x2="8" y2="13" />
+                    <line x1="16" y1="17" x2="8" y2="17" />
+                  </svg>
+                  <span>Download CV</span>
+                </a>
+
+                <a
+                  :href="profile.github"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="h-11 px-3 inline-flex items-center gap-1.5 text-sm font-semibold text-ink underline decoration-vermilion decoration-2 underline-offset-4 hover:bg-highlighter rounded-inner transition-colors"
+                >
+                  <span>GitHub</span>
+                  <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M7 17 17 7" />
+                    <path d="M7 7h10v10" />
+                  </svg>
+                </a>
               </div>
+            </div>
+
+            <!-- Right Tilted Spec Card (Mint Offset Shadow) -->
+            <div class="lg:col-span-5">
+              <aside aria-label="Quick engineer profile" class="hero-spec-card p-5 sm:p-6">
+                <div class="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-hairline">
+                  <span class="text-xs font-mono-tabular uppercase tracking-wider text-ink-tertiary whitespace-nowrap">
+                    ENGINEER SHEET
+                  </span>
+                  <span class="inline-flex items-center gap-1.5 text-xs font-mono-tabular font-semibold text-success whitespace-nowrap">
+                    <span class="w-1.5 h-1.5 rounded-full bg-success" aria-hidden="true"></span>
+                    <span>Available for roles</span>
+                  </span>
+                </div>
+
+                <dl class="divide-y divide-hairline text-sm">
+                  <div class="py-2.5 flex items-baseline justify-between gap-4">
+                    <dt class="font-mono-tabular text-xs text-ink-tertiary shrink-0">Location</dt>
+                    <dd class="font-medium text-ink text-right">{{ profile.location }} ({{ profile.timezone }})</dd>
+                  </div>
+                  <div class="py-2.5 flex items-baseline justify-between gap-4">
+                    <dt class="font-mono-tabular text-xs text-ink-tertiary shrink-0">Experience</dt>
+                    <dd class="font-medium text-ink text-right">{{ experience.company }}</dd>
+                  </div>
+                  <div class="py-2.5 flex items-baseline justify-between gap-4">
+                    <dt class="font-mono-tabular text-xs text-ink-tertiary shrink-0">Primary Stack</dt>
+                    <dd class="font-mono-tabular text-xs font-medium text-ink text-right">Vue, Nuxt, Kotlin, Compose</dd>
+                  </div>
+                </dl>
+
+                <div class="pt-3 mt-1 border-t border-hairline flex flex-wrap items-center justify-between gap-2">
+                  <a
+                    :href="`mailto:${profile.email}`"
+                    class="font-mono-tabular text-xs font-semibold text-ink underline decoration-vermilion decoration-2 underline-offset-4 hover:bg-highlighter px-1 -mx-1 rounded transition-colors"
+                  >
+                    {{ profile.email }}
+                  </a>
+                  <button
+                    type="button"
+                    class="h-8 px-3 rounded-full border-[1.5px] border-ink bg-surface-muted hover:bg-highlighter text-xs font-semibold text-ink active:scale-95 transition-all"
+                    @click="copyEmail"
+                  >
+                    {{ emailCopied ? "Copied" : "Copy email" }}
+                  </button>
+                </div>
+              </aside>
             </div>
           </div>
         </div>
       </section>
 
       <!-- ============================================================
-           2. Featured Projects (Horizontal Split Cards)
+           2. Sticky Scroll Story: Selected Works (#works)
            ============================================================ -->
-      <section id="projects" class="py-16 sm:py-20 border-t border-border scroll-mt-16">
-        <!-- Section Header -->
-        <div class="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-4 reveal-item">
-          <div>
-            <div class="inline-flex items-center gap-1.5 text-primary-600 text-xs font-bold uppercase tracking-wider mb-2">
-              <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
-              </svg>
-              <span>Selected works</span>
+      <section id="works" data-paper-zone class="has-margin-rule py-16 sm:py-24 border-t-[1.5px] border-ink">
+        <div class="max-w-[1220px] mx-auto px-4 sm:px-6 lg:px-8">
+          <!-- Section Header & Filter -->
+          <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-6 pb-8 border-b-[1.5px] border-ink">
+            <div class="space-y-2 max-w-[58ch]">
+              <h2 class="font-display font-semibold text-ink tracking-[-0.02em] leading-[1.04] text-[clamp(2.125rem,4.4vw,3.75rem)] text-balance">
+                Selected works
+              </h2>
+              <p class="text-base sm:text-lg text-ink-secondary text-pretty">
+                Four shipped projects spanning internal business operations, role-based web dashboards, local network tooling, and native Android storage.
+              </p>
             </div>
-            <h2 class="text-2xl sm:text-3xl font-bold text-text-primary tracking-tight">Featured projects</h2>
-            <p class="text-base text-text-secondary mt-1">
-              Production systems, web applications, and native mobile software built with clean architecture.
-            </p>
+
+            <div class="inline-flex flex-wrap items-center gap-1.5" role="group" aria-label="Filter works by platform">
+              <button
+                v-for="tab in filterOptions"
+                :key="tab.value"
+                type="button"
+                class="h-9 px-3.5 rounded-full border-[1.5px] text-xs font-mono-tabular font-semibold transition-colors active:scale-95"
+                :class="activeFilter === tab.value
+                  ? 'bg-ink text-surface border-ink shadow-[2px_2px_0_var(--accent)]'
+                  : 'bg-surface text-ink-secondary border-hairline hover:border-ink hover:text-ink'"
+                :aria-pressed="activeFilter === tab.value"
+                @click="activeFilter = tab.value"
+              >
+                {{ tab.label }}
+              </button>
+            </div>
           </div>
 
-          <!-- Filter Tabs -->
-          <div class="inline-flex items-center gap-1 p-1 bg-surface-muted border border-border rounded-lg self-start md:self-auto">
-            <button
-              v-for="filter in filters"
-              :key="filter.value"
-              @click="activeFilter = filter.value"
-              class="px-3.5 py-1.5 text-xs font-semibold rounded transition-colors duration-150"
-              :class="activeFilter === filter.value ? 'bg-surface-card text-primary-600 shadow-sm border border-border/80' : 'text-text-secondary hover:text-text-primary'"
+          <!-- Project Story Rows (4:8 Sticky Split on Desktop) -->
+          <div class="divide-y divide-hairline">
+            <article
+              v-for="(project, pIdx) in filteredProjects"
+              :key="project.id"
+              class="py-12 sm:py-16 lg:py-20 grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start"
             >
-              {{ filter.label }}
-            </button>
-          </div>
-        </div>
-
-        <!-- Projects Stack -->
-        <TransitionGroup
-          name="project-fade"
-          tag="div"
-          class="flex flex-col gap-7"
-        >
-          <article
-            v-for="project in filteredProjects"
-            :key="project.id"
-            class="bg-surface-card border border-border rounded-xl p-6 sm:p-8 shadow-sm grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-center hover:border-border-strong hover:-translate-y-0.5 hover:shadow-md transition-all duration-200"
-          >
-            <!-- Left Info (7 Cols) -->
-            <div class="lg:col-span-7 flex flex-col justify-between gap-4">
-              <div class="flex flex-col gap-2.5">
-                <div class="flex flex-wrap items-center gap-2">
-                  <span class="px-2.5 py-0.5 rounded text-[11px] font-semibold bg-primary-50 text-primary-700 border border-primary-100">
+              <!-- Sticky Left Narrative Column -->
+              <div class="lg:col-span-4 lg:sticky lg:top-24 space-y-4">
+                <div class="flex items-baseline justify-between gap-3">
+                  <span class="font-display text-5xl sm:text-6xl font-normal text-vermilion leading-none tabular-nums">
+                    {{ project.index }}
+                  </span>
+                  <span class="font-mono-tabular text-xs uppercase tracking-wider text-ink-tertiary text-right">
                     {{ project.category }}
                   </span>
-                  <span class="text-xs text-text-tertiary">{{ project.context }}</span>
                 </div>
 
-                <h3 class="text-xl sm:text-2xl font-bold text-text-primary tracking-tight leading-snug">
-                  {{ project.title }}
-                </h3>
+                <div>
+                  <h3 class="font-display text-2xl sm:text-3xl font-semibold text-ink tracking-tight leading-[1.14] text-balance">
+                    {{ project.title }}
+                  </h3>
+                  <p class="text-sm font-semibold text-signal-blue mt-1.5">
+                    {{ project.editorialHook }}
+                  </p>
+                </div>
 
-                <p class="text-sm text-text-secondary leading-relaxed">
-                  {{ project.description }}
+                <p class="text-sm sm:text-base text-ink-secondary leading-relaxed text-pretty">
+                  {{ project.summary }}
                 </p>
 
-                <!-- Tech Badges -->
                 <div class="flex flex-wrap gap-1.5 pt-1">
                   <span
                     v-for="tech in project.techStack"
                     :key="tech"
-                    class="px-2.5 py-1 rounded bg-surface-muted border border-border text-xs font-semibold text-text-primary"
+                    class="px-2.5 py-1 rounded-inner border border-hairline bg-surface text-xs font-mono-tabular text-ink"
                   >
                     {{ tech }}
                   </span>
                 </div>
+
+                <div class="flex flex-wrap items-center gap-3 pt-2">
+                  <button
+                    type="button"
+                    class="pill-cta h-10 px-4 text-xs sm:text-sm"
+                    @click="openProjectModal(project, getActiveScreenIndex(project))"
+                  >
+                    <span>Inspect gallery</span>
+                    <span class="font-mono-tabular text-[11px] opacity-80">({{ project.screens.length }})</span>
+                  </button>
+
+                  <a
+                    v-if="project.github"
+                    :href="project.github"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="btn-paper h-10 px-4 text-xs sm:text-sm"
+                  >
+                    <span>GitHub Repo</span>
+                    <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                      <path d="M7 17 17 7" />
+                      <path d="M7 7h10v10" />
+                    </svg>
+                  </a>
+                  <span v-else class="text-xs font-mono-tabular text-ink-tertiary">
+                    {{ project.accessLabel }}
+                  </span>
+                </div>
               </div>
 
-              <!-- Actions -->
-              <div class="flex flex-wrap items-center gap-3 pt-4 border-t border-border">
-                <button
-                  @click="openModal(project)"
-                  class="h-9 px-4 rounded-md bg-primary-600 hover:bg-primary-700 text-white text-xs font-semibold inline-flex items-center gap-1.5 shadow-sm active:scale-95 transition-all duration-150"
-                >
-                  <span>View project details</span>
-                  <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                    <line x1="5" y1="12" x2="19" y2="12"></line>
-                    <polyline points="12 5 19 12 12 19"></polyline>
-                  </svg>
-                </button>
+              <!-- Right Visual Frame Stage -->
+              <div class="lg:col-span-8">
+                <div class="project-frame p-3 sm:p-4">
+                  <!-- Top Switcher Strip -->
+                  <div class="flex flex-wrap items-center justify-between gap-2 pb-3 mb-3 border-b border-hairline">
+                    <!-- SpaceBridge Light vs Dark Pair Switcher -->
+                    <div
+                      v-if="project.isDualPortrait"
+                      class="inline-flex items-center gap-1.5"
+                      role="group"
+                      aria-label="Switch SpaceBridge theme preview"
+                    >
+                      <button
+                        type="button"
+                        class="px-3 py-1 rounded-inner text-xs font-mono-tabular border transition-colors"
+                        :class="spaceBridgeMode === 'light'
+                          ? 'bg-ink text-surface border-ink font-semibold'
+                          : 'bg-paper text-ink-secondary border-hairline hover:border-ink'"
+                        :aria-pressed="spaceBridgeMode === 'light'"
+                        @click="spaceBridgeMode = 'light'"
+                      >
+                        Light UI
+                      </button>
+                      <button
+                        type="button"
+                        class="px-3 py-1 rounded-inner text-xs font-mono-tabular border transition-colors"
+                        :class="spaceBridgeMode === 'dark'
+                          ? 'bg-ink text-surface border-ink font-semibold'
+                          : 'bg-paper text-ink-secondary border-hairline hover:border-ink'"
+                        :aria-pressed="spaceBridgeMode === 'dark'"
+                        @click="spaceBridgeMode = 'dark'"
+                      >
+                        Dark UI
+                      </button>
+                    </div>
+
+                    <!-- Standard Web / Hybrid Multi-Screen Tabs -->
+                    <div v-else class="flex flex-wrap items-center gap-1.5">
+                      <button
+                        v-for="(scr, sIdx) in project.screens"
+                        :key="scr.src"
+                        type="button"
+                        class="px-2.5 py-1 rounded-inner text-xs font-mono-tabular border transition-colors"
+                        :class="getActiveScreenIndex(project) === sIdx
+                          ? 'bg-ink text-surface border-ink font-semibold'
+                          : 'bg-paper text-ink-secondary border-hairline hover:border-ink'"
+                        :aria-pressed="getActiveScreenIndex(project) === sIdx"
+                        @click="setProjectScreen(project.id, sIdx)"
+                      >
+                        {{ scr.label }}
+                      </button>
+                    </div>
+
+                    <button
+                      type="button"
+                      class="text-xs font-mono-tabular font-semibold text-ink hover:text-vermilion underline underline-offset-4 ml-auto"
+                      @click="openProjectModal(project, getActiveScreenIndex(project))"
+                    >
+                      Full details &rarr;
+                    </button>
+                  </div>
+
+                  <!-- Dual Portrait Android Stage (SpaceBridge) -->
+                  <div
+                    v-if="project.isDualPortrait"
+                    class="rounded-inner bg-surface-muted border border-hairline p-4 sm:p-6 cursor-pointer"
+                    @click="openProjectModal(project, spaceBridgeMode === 'light' ? 0 : 2)"
+                  >
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 items-center justify-items-center max-w-[600px] mx-auto">
+                      <figure
+                        v-for="(phoneScreen, phoneIdx) in activeSpaceBridgePair"
+                        :key="phoneScreen.src"
+                        class="flex flex-col items-center gap-2.5"
+                      >
+                        <div class="rounded-[20px] border-[2px] border-ink bg-ink p-1.5 shadow-[4px_4px_0_var(--border-strong)]">
+                          <img
+                            :src="phoneScreen.src"
+                            :alt="`${project.title} - ${phoneScreen.label}`"
+                            :width="phoneScreen.width"
+                            :height="phoneScreen.height"
+                            :style="{ aspectRatio: `${phoneScreen.width} / ${phoneScreen.height}` }"
+                            loading="lazy"
+                            class="block h-[340px] sm:h-[380px] w-full max-w-[184px] rounded-[14px] object-contain"
+                          />
+                        </div>
+                        <figcaption class="text-xs font-mono-tabular text-ink-secondary text-center">
+                          {{ phoneIdx + 1 }}. {{ phoneScreen.label }}
+                        </figcaption>
+                      </figure>
+                    </div>
+                  </div>
+
+                  <!-- Single Web or Portrait Stage -->
+                  <div
+                    v-else
+                    class="rounded-inner bg-surface-muted border border-hairline overflow-hidden cursor-pointer flex items-center justify-center"
+                    :class="getCurrentScreen(project).orientation === 'portrait' ? 'p-4 sm:p-6' : 'p-1.5 sm:p-2'"
+                    @click="openProjectModal(project, getActiveScreenIndex(project))"
+                  >
+                    <div
+                      v-if="getCurrentScreen(project).orientation === 'portrait'"
+                      class="rounded-[20px] border-[2px] border-ink bg-ink p-1.5 shadow-[4px_4px_0_var(--border-strong)]"
+                    >
+                      <img
+                        :src="getCurrentScreen(project).src"
+                        :alt="`${project.title} - ${getCurrentScreen(project).label}`"
+                        :width="getCurrentScreen(project).width"
+                        :height="getCurrentScreen(project).height"
+                        :style="{ aspectRatio: `${getCurrentScreen(project).width} / ${getCurrentScreen(project).height}` }"
+                        loading="lazy"
+                        class="block h-[360px] sm:h-[420px] w-full max-w-[198px] rounded-[14px] object-contain"
+                      />
+                    </div>
+
+                    <img
+                      v-else-if="pIdx === 0 && getActiveScreenIndex(project) === 0"
+                      :src="getCurrentScreen(project).src"
+                      :alt="`${project.title} - ${getCurrentScreen(project).label}`"
+                      :width="getCurrentScreen(project).width"
+                      :height="getCurrentScreen(project).height"
+                      :style="{ aspectRatio: `${getCurrentScreen(project).width} / ${getCurrentScreen(project).height}` }"
+                      fetchpriority="high"
+                      class="block w-full max-h-[470px] object-contain rounded-[4px] border border-hairline bg-surface"
+                    />
+
+                    <img
+                      v-else
+                      :src="getCurrentScreen(project).src"
+                      :alt="`${project.title} - ${getCurrentScreen(project).label}`"
+                      :width="getCurrentScreen(project).width"
+                      :height="getCurrentScreen(project).height"
+                      :style="{ aspectRatio: `${getCurrentScreen(project).width} / ${getCurrentScreen(project).height}` }"
+                      loading="lazy"
+                      class="block w-full max-h-[470px] object-contain rounded-[4px] border border-hairline bg-surface"
+                    />
+                  </div>
+
+                  <!-- Caption Footer -->
+                  <div class="pt-3 mt-3 border-t border-hairline flex flex-wrap items-center justify-between gap-2 text-xs text-ink-secondary">
+                    <span>
+                      <strong class="font-semibold text-ink">{{ getCurrentCaptionTitle(project) }}:</strong>
+                      {{ getCurrentCaptionBody(project) }}
+                    </span>
+                    <span class="font-mono-tabular text-ink-tertiary">
+                      Click preview to expand
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================================
+           3. Dark Rhythm Break #1: Dual-Platform Craft Stage (#craft)
+           ============================================================ -->
+      <section
+        id="craft"
+        ref="craftSectionEl"
+        class="bg-dark-ink py-20 sm:py-24 lg:py-28 border-y border-dark-border"
+      >
+        <div class="max-w-[1220px] mx-auto px-4 sm:px-6 lg:px-8 space-y-10">
+          <!-- Header & Platform Tabs -->
+          <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-6 pb-8 border-b border-dark-border">
+            <div class="space-y-3 max-w-[62ch]">
+              <p class="font-mono-tabular text-xs uppercase tracking-widest text-mint">
+                {{ activeCraftTrack.eyebrow }}
+              </p>
+              <h2 class="font-display font-semibold text-on-dark tracking-[-0.02em] leading-[1.04] text-[clamp(2rem,4.3vw,3.5rem)] text-balance">
+                {{ activeCraftTrack.heading }}
+              </h2>
+              <p class="text-base text-on-dark-muted leading-relaxed text-pretty">
+                {{ activeCraftTrack.summary }}
+              </p>
+            </div>
+
+            <!-- Accessible Tablist -->
+            <div
+              ref="craftTablistEl"
+              role="tablist"
+              aria-label="Engineering craft focus"
+              class="inline-flex flex-wrap gap-1.5 p-1.5 rounded-full border border-dark-border bg-dark-surface self-start lg:self-auto"
+            >
+              <button
+                v-for="(track, tIdx) in craftTracks"
+                :key="track.id"
+                type="button"
+                role="tab"
+                :id="`craft-tab-${track.id}`"
+                :aria-selected="activeCraftId === track.id"
+                :aria-controls="`craft-panel-${track.id}`"
+                :tabindex="activeCraftId === track.id ? 0 : -1"
+                class="h-9 px-4 rounded-full text-xs font-mono-tabular font-semibold transition-colors"
+                :class="activeCraftId === track.id
+                  ? 'bg-highlighter text-ink'
+                  : 'text-on-dark-muted hover:text-on-dark hover:bg-dark-ink'"
+                @click="activeCraftId = track.id"
+                @keydown.left.prevent="stepCraftTab(tIdx, -1)"
+                @keydown.right.prevent="stepCraftTab(tIdx, 1)"
+              >
+                {{ track.label }}
+              </button>
+            </div>
+          </div>
+
+          <!-- Active Craft Panel -->
+          <div
+            :id="`craft-panel-${activeCraftTrack.id}`"
+            role="tabpanel"
+            :aria-labelledby="`craft-tab-${activeCraftTrack.id}`"
+            class="space-y-8"
+          >
+            <!-- 2 Architecture Pillar Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div
+                v-for="pillar in activeCraftTrack.pillars"
+                :key="pillar.title"
+                class="rounded-card border border-dark-border bg-dark-surface p-6 space-y-4"
+              >
+                <div class="space-y-2">
+                  <h3 class="font-display text-xl sm:text-2xl font-semibold text-on-dark">
+                    {{ pillar.title }}
+                  </h3>
+                  <p class="text-sm sm:text-base text-on-dark-muted leading-relaxed text-pretty">
+                    {{ pillar.detail }}
+                  </p>
+                </div>
+                <div class="flex flex-wrap gap-1.5 pt-2 border-t border-dark-border">
+                  <span
+                    v-for="tag in pillar.stack"
+                    :key="tag"
+                    class="px-2.5 py-1 rounded-inner border border-dark-border bg-dark-ink text-xs font-mono-tabular text-on-dark"
+                  >
+                    {{ tag }}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Real Paired Visual Proof -->
+            <div v-if="activeCraftId === 'split'" class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+              <div class="lg:col-span-7 rounded-card border border-dark-border bg-dark-surface p-4 flex flex-col justify-between gap-4">
+                <div class="flex items-center justify-between gap-3">
+                  <span class="font-mono-tabular text-xs text-mint">WEB REAL-TIME · CLIPSYNC</span>
+                  <span class="font-mono-tabular text-xs text-on-dark-muted">Nuxt · Bun · Redis Pub/Sub</span>
+                </div>
+                <img
+                  src="/images/clipsync-2.png"
+                  alt="ClipSync shared LAN room streaming code snippets and files"
+                  width="1863"
+                  height="926"
+                  style="aspect-ratio: 1863 / 926;"
+                  loading="lazy"
+                  class="w-full rounded-inner border border-dark-border object-contain bg-surface"
+                />
+                <p class="text-xs sm:text-sm text-on-dark-muted">
+                  Real-time room session exchanging code blocks and binary files up to 50 MB across devices on the same Wi-Fi network.
+                </p>
+              </div>
+
+              <div class="lg:col-span-5 rounded-card border border-dark-border bg-dark-surface p-4 flex flex-col justify-between gap-4">
+                <div class="flex items-center justify-between gap-3">
+                  <span class="font-mono-tabular text-xs text-highlighter">NATIVE ANDROID · SPACEBRIDGE</span>
+                  <span class="font-mono-tabular text-xs text-on-dark-muted">Kotlin · Compose · Material 3</span>
+                </div>
+                <div class="grid grid-cols-2 gap-3 items-center justify-items-center py-2">
+                  <img
+                    src="/images/SpaceBridge-5.jpeg"
+                    alt="SpaceBridge dark theme checklist editor"
+                    width="610"
+                    height="1282"
+                    style="aspect-ratio: 610 / 1282;"
+                    loading="lazy"
+                    class="h-[260px] sm:h-[290px] w-full max-w-[138px] rounded-[14px] border border-dark-border object-contain"
+                  />
+                  <img
+                    src="/images/SpaceBridge-7.jpeg"
+                    alt="SpaceBridge dark theme Google Drive catalog"
+                    width="763"
+                    height="1600"
+                    style="aspect-ratio: 763 / 1600;"
+                    loading="lazy"
+                    class="h-[260px] sm:h-[290px] w-full max-w-[138px] rounded-[14px] border border-dark-border object-contain"
+                  />
+                </div>
+                <p class="text-xs sm:text-sm text-on-dark-muted">
+                  Offline-first Firestore checklist editor paired with in-app Google Drive file browsing and WorkManager chunked transfers.
+                </p>
+              </div>
+            </div>
+
+            <div v-else-if="activeCraftId === 'web'" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div class="rounded-card border border-dark-border bg-dark-surface p-4 space-y-3">
+                <div class="flex items-center justify-between gap-2">
+                  <span class="font-mono-tabular text-xs text-mint">DAPURGO · CRUD TABLES</span>
+                  <span class="font-mono-tabular text-xs text-on-dark-muted">Vue.js · REST API</span>
+                </div>
+                <img
+                  src="/images/dapurgo-3.png"
+                  alt="DapurGo product CRUD table"
+                  width="1863"
+                  height="892"
+                  style="aspect-ratio: 1863 / 892;"
+                  loading="lazy"
+                  class="w-full rounded-inner border border-dark-border object-contain"
+                />
+              </div>
+
+              <div class="rounded-card border border-dark-border bg-dark-surface p-4 space-y-3">
+                <div class="flex items-center justify-between gap-2">
+                  <span class="font-mono-tabular text-xs text-highlighter">INVENTORY SPA · TELEMETRY</span>
+                  <span class="font-mono-tabular text-xs text-on-dark-muted">Laravel · Inertia.js · Chart.js</span>
+                </div>
+                <img
+                  src="/images/inventaris-1.png"
+                  alt="Laboratory Inventory Management analytics dashboard"
+                  width="1843"
+                  height="839"
+                  style="aspect-ratio: 1843 / 839;"
+                  loading="lazy"
+                  class="w-full rounded-inner border border-dark-border object-contain"
+                />
+              </div>
+            </div>
+
+            <div v-else class="rounded-card border border-dark-border bg-dark-surface p-5">
+              <div class="flex flex-wrap items-center justify-between gap-2 mb-4">
+                <span class="font-mono-tabular text-xs text-highlighter">SPACEBRIDGE NATIVE UI STATES</span>
+                <span class="font-mono-tabular text-xs text-on-dark-muted">Light Feed · Dark Checklist Editor · Dark Drive Hub</span>
+              </div>
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-5 items-center justify-items-center">
+                <img
+                  src="/images/SpaceBridge-2.jpeg"
+                  alt="SpaceBridge Cloud Firestore synced notes feed"
+                  width="610"
+                  height="1286"
+                  style="aspect-ratio: 610 / 1286;"
+                  loading="lazy"
+                  class="h-[320px] w-full max-w-[152px] rounded-[16px] border border-dark-border object-contain"
+                />
+                <img
+                  src="/images/SpaceBridge-5.jpeg"
+                  alt="SpaceBridge checklist progress editor in dark theme"
+                  width="610"
+                  height="1282"
+                  style="aspect-ratio: 610 / 1282;"
+                  loading="lazy"
+                  class="h-[320px] w-full max-w-[152px] rounded-[16px] border border-dark-border object-contain"
+                />
+                <img
+                  src="/images/SpaceBridge-7.jpeg"
+                  alt="SpaceBridge dark theme Google Drive catalog"
+                  width="763"
+                  height="1600"
+                  style="aspect-ratio: 763 / 1600;"
+                  loading="lazy"
+                  class="h-[320px] w-full max-w-[152px] rounded-[16px] border border-dark-border object-contain"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================================
+           4. Light Ruled Spread: Experience & Technical Capabilities (#experience)
+           ============================================================ -->
+      <section id="experience" class="bg-ruled-paper has-margin-rule py-20 sm:py-24 lg:py-28">
+        <div class="max-w-[1220px] mx-auto px-4 sm:px-6 lg:px-8">
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-14 items-start">
+            <!-- Left 5 Cols: Experience -->
+            <div class="lg:col-span-5 space-y-6 reveal-block">
+              <div class="space-y-2">
+                <span class="font-mono-tabular text-xs font-semibold uppercase tracking-wider text-vermilion">
+                  Work history
+                </span>
+                <h2 class="font-display font-semibold text-ink tracking-[-0.02em] leading-[1.04] text-[clamp(2rem,4vw,3.15rem)]">
+                  Practical industry experience
+                </h2>
+              </div>
+
+              <div class="border-t-[1.5px] border-ink pt-5 space-y-4">
+                <div class="flex flex-wrap items-baseline justify-between gap-2">
+                  <div>
+                    <h3 class="font-display text-2xl font-semibold text-ink">
+                      {{ experience.company }}
+                    </h3>
+                    <p class="text-sm font-semibold text-signal-blue mt-0.5">
+                      {{ experience.role }}
+                    </p>
+                  </div>
+                  <span class="px-2.5 py-1 rounded-full bg-highlighter border border-ink text-xs font-mono-tabular font-semibold text-ink">
+                    {{ experience.period }} · {{ experience.duration }}
+                  </span>
+                </div>
+
+                <ul class="space-y-2.5 text-sm sm:text-base text-ink-secondary">
+                  <li
+                    v-for="(item, idx) in experience.highlights"
+                    :key="idx"
+                    class="flex items-start gap-2.5"
+                  >
+                    <span class="w-1.5 h-1.5 rounded-full bg-vermilion mt-2.5 shrink-0" aria-hidden="true"></span>
+                    <span class="leading-relaxed">{{ item }}</span>
+                  </li>
+                </ul>
+
+                <div class="flex flex-wrap gap-1.5 pt-2">
+                  <span
+                    v-for="tag in experience.stack"
+                    :key="tag"
+                    class="px-2.5 py-1 rounded-inner border border-hairline bg-paper text-xs font-mono-tabular text-ink"
+                  >
+                    {{ tag }}
+                  </span>
+                </div>
+              </div>
+
+              <div class="border-t border-hairline pt-5 flex flex-wrap items-center justify-between gap-3">
+                <p class="text-xs sm:text-sm text-ink-tertiary max-w-[34ch]">
+                  Complete resume documentation is available in the downloadable PDF.
+                </p>
                 <a
-                  v-if="project.github"
-                  :href="project.github"
+                  :href="cvHref"
                   target="_blank"
                   rel="noopener noreferrer"
-                  class="h-9 px-3.5 rounded-md bg-surface-muted hover:bg-surface-card border border-border text-xs font-semibold text-text-primary inline-flex items-center gap-1.5 transition-colors active:scale-95"
+                  class="btn-paper h-10 px-4 text-xs sm:text-sm shrink-0"
                 >
-                  <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor">
-                    <path fill-rule="evenodd" clip-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" />
+                  <span>Open CV (PDF)</span>
+                  <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M7 17 17 7" />
+                    <path d="M7 7h10v10" />
                   </svg>
-                  <span>Repository</span>
                 </a>
               </div>
             </div>
 
-            <!-- Right Thumbnail (5 Cols) -->
-            <div
-              @click="openModal(project)"
-              class="lg:col-span-5 bg-surface-muted border border-border rounded-lg p-2 overflow-hidden cursor-pointer group flex items-center justify-center"
-              title="Click to view full screenshot gallery"
-            >
-              <img
-                :src="project.image"
-                :alt="project.title"
-                class="w-full h-56 sm:h-64 object-cover object-top rounded border border-border group-hover:scale-[1.02] transition-transform duration-300"
-                :class="{ 'max-w-[200px] object-contain': project.categoryType === 'mobile' }"
-                loading="lazy"
-              />
-            </div>
-          </article>
-        </TransitionGroup>
-      </section>
-
-      <!-- ============================================================
-           3. Technical Stack & Capabilities (4-Pillar Grid)
-           ============================================================ -->
-      <section id="skills" class="py-16 sm:py-20 border-t border-border scroll-mt-16">
-        <div class="mb-10 reveal-item">
-          <div class="inline-flex items-center gap-1.5 text-primary-600 text-xs font-bold uppercase tracking-wider mb-2">
-            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-              <polyline points="16 18 22 12 16 6"></polyline>
-              <polyline points="8 6 2 12 8 18"></polyline>
-            </svg>
-            <span>Core capabilities</span>
-          </div>
-          <h2 class="text-2xl sm:text-3xl font-bold text-text-primary tracking-tight">Technical stack and skills</h2>
-          <p class="text-base text-text-secondary mt-1">
-            Technologies and tooling I actively work with to ship reliable web and mobile systems.
-          </p>
-        </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
-          <!-- Pillar 1: Frontend & Mobile Core -->
-          <div class="bg-surface-card border border-border rounded-xl p-5 shadow-sm flex flex-col justify-between gap-4 hover:-translate-y-0.5 hover:border-border-strong transition-all duration-200 reveal-item">
-            <div>
-              <div class="w-10 h-10 rounded-lg bg-surface-muted text-primary-600 flex items-center justify-center mb-3">
-                <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <rect width="20" height="14" x="2" y="3" rx="2"></rect>
-                  <line x1="8" y1="21" x2="16" y2="21"></line>
-                  <line x1="12" y1="17" x2="12" y2="21"></line>
-                </svg>
+            <!-- Right 7 Cols: Editorial Typographic Capabilities Index -->
+            <div class="lg:col-span-7 space-y-6 reveal-block">
+              <div class="space-y-2">
+                <span class="font-mono-tabular text-xs font-semibold uppercase tracking-wider text-ink-tertiary">
+                  Technical capabilities
+                </span>
+                <h2 class="font-display font-semibold text-ink tracking-[-0.02em] leading-[1.04] text-[clamp(2rem,4vw,3.15rem)]">
+                  Core stack and tools
+                </h2>
               </div>
-              <h3 class="text-base font-bold text-text-primary mb-1">Frontend and mobile</h3>
-              <p class="text-xs text-text-secondary leading-relaxed">
-                Component architecture, state management, and responsive interfaces across web and Android.
-              </p>
-            </div>
-            <div class="flex flex-wrap gap-1.5 pt-3 border-t border-border">
-              <span v-for="tag in ['Vue.js', 'Nuxt', 'Kotlin', 'Jetpack Compose', 'TypeScript']" :key="tag" class="px-2 py-0.5 rounded bg-surface-muted border border-border text-[11px] font-semibold text-text-primary">
-                {{ tag }}
-              </span>
-            </div>
-          </div>
 
-          <!-- Pillar 2: Styling & UI -->
-          <div class="bg-surface-card border border-border rounded-xl p-5 shadow-sm flex flex-col justify-between gap-4 hover:-translate-y-0.5 hover:border-border-strong transition-all duration-200 reveal-item" style="transition-delay: 40ms;">
-            <div>
-              <div class="w-10 h-10 rounded-lg bg-info-50 text-info-600 flex items-center justify-center mb-3">
-                <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <circle cx="13.5" cy="6.5" r=".5" fill="currentColor"></circle>
-                  <circle cx="17.5" cy="10.5" r=".5" fill="currentColor"></circle>
-                  <circle cx="8.5" cy="7.5" r=".5" fill="currentColor"></circle>
-                  <circle cx="6.5" cy="12.5" r=".5" fill="currentColor"></circle>
-                  <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.563-2.512 5.563-5.563C22 6.5 17.5 2 12 2Z"></path>
-                </svg>
-              </div>
-              <h3 class="text-base font-bold text-text-primary mb-1">Styling and interface</h3>
-              <p class="text-xs text-text-secondary leading-relaxed">
-                Design tokens, CSS variables, responsive grid layouts, and WCAG AA contrast standards.
-              </p>
-            </div>
-            <div class="flex flex-wrap gap-1.5 pt-3 border-t border-border">
-              <span v-for="tag in ['Tailwind CSS', 'CSS Variables', 'Figma', 'Responsive Grid', 'WCAG AA']" :key="tag" class="px-2 py-0.5 rounded bg-surface-muted border border-border text-[11px] font-semibold text-text-primary">
-                {{ tag }}
-              </span>
-            </div>
-          </div>
+              <div class="border-t-[1.5px] border-ink divide-y divide-hairline">
+                <div
+                  v-for="group in capabilityGroups"
+                  :key="group.index"
+                  class="py-5 grid grid-cols-1 sm:grid-cols-12 gap-3 sm:gap-5 items-start"
+                >
+                  <div class="sm:col-span-5 flex items-baseline gap-3">
+                    <span class="font-mono-tabular text-xs font-semibold text-vermilion shrink-0">
+                      {{ group.index }}
+                    </span>
+                    <div>
+                      <h3 class="font-display text-lg sm:text-xl font-semibold text-ink">
+                        {{ group.title }}
+                      </h3>
+                      <p class="text-xs text-ink-tertiary mt-0.5 leading-relaxed">
+                        {{ group.description }}
+                      </p>
+                    </div>
+                  </div>
 
-          <!-- Pillar 3: Full-Stack & Tooling -->
-          <div class="bg-surface-card border border-border rounded-xl p-5 shadow-sm flex flex-col justify-between gap-4 hover:-translate-y-0.5 hover:border-border-strong transition-all duration-200 reveal-item" style="transition-delay: 80ms;">
-            <div>
-              <div class="w-10 h-10 rounded-lg bg-surface-muted text-text-primary flex items-center justify-center mb-3">
-                <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <circle cx="18" cy="18" r="3"></circle>
-                  <circle cx="6" cy="6" r="3"></circle>
-                  <path d="M13 6h3a2 2 0 0 1 2 2v7"></path>
-                  <line x1="6" y1="9" x2="6" y2="21"></line>
-                </svg>
+                  <div class="sm:col-span-7 flex flex-wrap gap-1.5">
+                    <span
+                      v-for="item in group.items"
+                      :key="item"
+                      class="px-2.5 py-1 rounded-inner border border-hairline bg-paper text-xs font-mono-tabular text-ink"
+                    >
+                      {{ item }}
+                    </span>
+                  </div>
+                </div>
               </div>
-              <h3 class="text-base font-bold text-text-primary mb-1">Backend and cloud</h3>
-              <p class="text-xs text-text-secondary leading-relaxed">
-                RESTful APIs, relational databases, Cloud Firestore, and Google Drive integration.
-              </p>
-            </div>
-            <div class="flex flex-wrap gap-1.5 pt-3 border-t border-border">
-              <span v-for="tag in ['Laravel', 'Inertia.js', 'MySQL', 'Firebase', 'REST API', 'Redis']" :key="tag" class="px-2 py-0.5 rounded bg-surface-muted border border-border text-[11px] font-semibold text-text-primary">
-                {{ tag }}
-              </span>
-            </div>
-          </div>
 
-          <!-- Pillar 4: DevOps & Performance -->
-          <div class="bg-surface-card border border-border rounded-xl p-5 shadow-sm flex flex-col justify-between gap-4 hover:-translate-y-0.5 hover:border-border-strong transition-all duration-200 reveal-item" style="transition-delay: 120ms;">
-            <div>
-              <div class="w-10 h-10 rounded-lg bg-success-50 text-success-600 flex items-center justify-center mb-3">
-                <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
-                </svg>
+              <!-- Languages & Working Style Strip -->
+              <div class="pt-4 border-t border-hairline grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+                <div>
+                  <div class="font-mono-tabular text-xs uppercase tracking-wider text-ink-tertiary mb-1">
+                    Collaboration
+                  </div>
+                  <p class="text-ink-secondary">
+                    {{ collaborationMeta.workingStyle.join(" · ") }}
+                  </p>
+                </div>
+                <div>
+                  <div class="font-mono-tabular text-xs uppercase tracking-wider text-ink-tertiary mb-1">
+                    Languages
+                  </div>
+                  <p class="text-ink-secondary">
+                    {{ collaborationMeta.languages }}
+                  </p>
+                </div>
               </div>
-              <h3 class="text-base font-bold text-text-primary mb-1">DevOps and tooling</h3>
-              <p class="text-xs text-text-secondary leading-relaxed">
-                Docker containers, Git version control, Bun runtime, and team issue tracking.
-              </p>
-            </div>
-            <div class="flex flex-wrap gap-1.5 pt-3 border-t border-border">
-              <span v-for="tag in ['Docker', 'Bun', 'Git and GitLab', 'ClickUp', 'Chart.js']" :key="tag" class="px-2 py-0.5 rounded bg-surface-muted border border-border text-[11px] font-semibold text-text-primary">
-                {{ tag }}
-              </span>
             </div>
           </div>
         </div>
       </section>
 
       <!-- ============================================================
-           4. Experience & Background (Structured Split Layout)
+           5. Dark Rhythm Break #2: Direct Contact & Tilted Note Form (#contact)
            ============================================================ -->
-      <section class="py-16 sm:py-20 border-t border-border">
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
-          <!-- Left: Career Milestones & Education (7 Cols, ID: experience) -->
-          <div id="experience" class="lg:col-span-7 flex flex-col gap-6 scroll-mt-24">
-            <div class="reveal-item">
-              <div class="inline-flex items-center gap-1.5 text-primary-600 text-xs font-bold uppercase tracking-wider mb-2">
-                <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                  <rect width="20" height="14" x="2" y="7" rx="2" ry="2"></rect>
-                  <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
-                </svg>
-                <span>Career milestones</span>
-              </div>
-              <h2 class="text-2xl sm:text-3xl font-bold text-text-primary tracking-tight">Work experience</h2>
-            </div>
-
-            <!-- 1. PT. Daya Gagas Internasional -->
-            <div class="bg-surface-card border border-border rounded-xl p-6 shadow-sm flex flex-col gap-4 reveal-item">
-              <div class="flex flex-wrap items-start justify-between gap-2 pb-4 border-b border-border">
-                <div>
-                  <h3 class="text-lg font-bold text-text-primary">Front-end developer, intern</h3>
-                  <p class="text-sm font-semibold text-primary-600 mt-0.5">PT. Daya Gagas Internasional</p>
-                </div>
-                <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-primary-50 text-primary-700 border border-primary-100">
-                  March to July 2025, 4 months
-                </span>
-              </div>
-
-              <ul class="flex flex-col gap-2.5 text-sm text-text-secondary">
-                <li class="flex items-start gap-2.5">
-                  <span class="w-1.5 h-1.5 rounded-full bg-primary-600 mt-2 flex-shrink-0"></span>
-                  <span>Built responsive pages for the DapurGo web app using Vue.js and JavaScript based on Figma prototypes.</span>
-                </li>
-                <li class="flex items-start gap-2.5">
-                  <span class="w-1.5 h-1.5 rounded-full bg-primary-600 mt-2 flex-shrink-0"></span>
-                  <span>Implemented CRUD features for Product, Dish, and Supplier modules with RESTful API integration.</span>
-                </li>
-                <li class="flex items-start gap-2.5">
-                  <span class="w-1.5 h-1.5 rounded-full bg-primary-600 mt-2 flex-shrink-0"></span>
-                  <span>Developed reusable Vue components to maintain UI consistency across multiple dashboard pages.</span>
-                </li>
-                <li class="flex items-start gap-2.5">
-                  <span class="w-1.5 h-1.5 rounded-full bg-primary-600 mt-2 flex-shrink-0"></span>
-                  <span>Collaborated via GitLab, ClickUp, and Google Meet in a cross-functional agile team.</span>
-                </li>
-              </ul>
-
-              <div class="flex flex-wrap gap-1.5 pt-3 border-t border-border">
-                <span v-for="tag in ['Vue.js', 'JavaScript', 'Tailwind CSS', 'REST API', 'GitLab', 'ClickUp']" :key="tag" class="px-2 py-0.5 rounded bg-surface-muted border border-border text-[11px] font-semibold text-text-primary">
-                  {{ tag }}
-                </span>
-              </div>
-            </div>
-
-
-            <!-- Formal Education -->
-            <div class="bg-surface-card border border-border rounded-xl p-6 shadow-sm flex flex-col gap-3 reveal-item">
-              <div class="flex flex-wrap items-start justify-between gap-2 pb-3 border-b border-border">
-                <div>
-                  <h3 class="text-lg font-bold text-text-primary">State University of Jakarta</h3>
-                  <p class="text-sm font-semibold text-primary-600 mt-0.5">Informatics and Computer Engineering Education</p>
-                </div>
-                <div class="text-right">
-                  <span class="text-xs font-semibold text-text-primary block">2022 to 2026</span>
-                  <span class="text-xs font-bold text-success-600 block mt-0.5">GPA: 3.77 / 4.00</span>
-                </div>
-              </div>
-              <p class="text-xs sm:text-sm text-text-secondary leading-relaxed">
-                Comprehensive study of computer engineering education, data structures, algorithms, relational database systems, and modern web application development with component frameworks.
-              </p>
-            </div>
-          </div>
-
-          <!-- Right: About Me & Contact Hook (5 Cols) -->
-          <div class="lg:col-span-5 flex flex-col gap-8">
-            <!-- About Section (ID: about) -->
-            <div id="about" class="flex flex-col gap-6 scroll-mt-24">
-              <div class="reveal-item">
-                <div class="inline-flex items-center gap-1.5 text-primary-600 text-xs font-bold uppercase tracking-wider mb-2">
-                  <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path>
-                    <circle cx="12" cy="7" r="4"></circle>
-                  </svg>
-                  <span>Personal background</span>
-                </div>
-                <h2 class="text-2xl sm:text-3xl font-bold text-text-primary tracking-tight">About me</h2>
-              </div>
-
-              <!-- Bio Card -->
-              <div class="bg-surface-card border border-border rounded-xl p-6 shadow-sm flex flex-col gap-4 text-sm text-text-secondary leading-relaxed reveal-item">
-                <p>
-                  I build responsive web and native Android applications with clear typography, intuitive navigation, and fast interactions. I studied computer engineering education at State University of Jakarta and enjoy turning user requirements into dependable software.
+      <section
+        id="contact"
+        ref="contactSectionEl"
+        class="bg-dark-ink py-20 sm:py-24 lg:py-28 border-t border-dark-border"
+      >
+        <div class="max-w-[1220px] mx-auto px-4 sm:px-6 lg:px-8">
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-start">
+            <!-- Left 6 Cols: Direct Contact Channels -->
+            <div class="lg:col-span-6 space-y-6">
+              <div class="space-y-3">
+                <p class="font-mono-tabular text-xs uppercase tracking-widest text-mint">
+                  DIRECT CONTACT · JAKARTA BARAT (UTC+7)
                 </p>
-                <p>
-                  Comfortable working in cross-functional teams with Git workflows, agile sprints, and RESTful API integrations. Quick to learn new technologies and focused on building accessible user interfaces.
+                <h2 class="font-display font-semibold text-on-dark tracking-[-0.02em] leading-[0.98] text-[clamp(2.35rem,5vw,4.15rem)] text-balance">
+                  Start a direct conversation.
+                </h2>
+                <p class="text-base sm:text-lg text-on-dark-muted leading-relaxed max-w-[46ch] text-pretty">
+                  Open to Front-End and Native Android engineering roles, product builds, and technical interviews.
                 </p>
-
-                <!-- Soft Skills & Languages (From CV) -->
-                <div class="p-3.5 bg-surface-muted rounded-lg border border-border flex flex-col gap-2">
-                  <span class="text-xs font-bold uppercase tracking-wider text-text-primary">Soft skills and languages</span>
-                  <p class="text-xs text-text-secondary">
-                    <strong>Soft skills:</strong> Analytical Thinking, Problem Solving, Team Collaboration, Adaptability.
-                  </p>
-                  <p class="text-xs text-text-secondary">
-                    <strong>Languages:</strong> Indonesian (native), English (intermediate).
-                  </p>
-                </div>
-
-                <!-- Location Tag -->
-                <div class="flex items-center gap-2 text-xs font-medium text-text-secondary">
-                  <svg class="w-4 h-4 text-primary-600 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"></path>
-                    <circle cx="12" cy="10" r="3"></circle>
-                  </svg>
-                  <span>Jakarta Barat, DKI Jakarta, Indonesia (UTC+7)</span>
-                </div>
-              </div>
-            </div>
-
-            <!-- Contact Box (ID: contact) -->
-            <div id="contact" class="bg-surface-muted border border-border rounded-xl p-6 shadow-sm flex flex-col gap-4 reveal-item scroll-mt-24">
-              <div class="flex items-center justify-between">
-                <h3 class="text-base font-bold text-text-primary">Direct communication</h3>
-                <span class="px-2 py-0.5 rounded text-[11px] font-semibold bg-success-50 text-success-600 border border-success-500/20">
-                  Open for opportunities
-                </span>
               </div>
 
-              <!-- Email Row -->
-              <div class="p-3 bg-surface-card border border-border rounded-lg flex items-center justify-between gap-2">
-                <div class="flex flex-col">
-                  <span class="text-[11px] text-text-tertiary font-medium">Email address</span>
-                  <span class="font-mono text-xs sm:text-sm font-semibold text-text-primary">tapwrk1@gmail.com</span>
+              <!-- Contact Channel Rows -->
+              <div class="border-t border-dark-border divide-y divide-dark-border">
+                <!-- Email (mailto + copy) -->
+                <div class="py-4 flex flex-wrap items-center justify-between gap-3">
+                  <div class="min-w-0">
+                    <div class="font-mono-tabular text-xs text-on-dark-muted">Email</div>
+                    <a
+                      :href="`mailto:${profile.email}`"
+                      class="font-mono-tabular text-sm sm:text-base font-semibold text-on-dark underline decoration-highlighter decoration-2 underline-offset-4 hover:text-highlighter transition-colors break-all"
+                    >
+                      {{ profile.email }}
+                    </a>
+                  </div>
+                  <div class="flex items-center gap-2 shrink-0">
+                    <a
+                      :href="`mailto:${profile.email}`"
+                      class="h-9 px-3.5 rounded-full border border-dark-border bg-dark-surface text-xs font-semibold text-on-dark inline-flex items-center hover:border-highlighter transition-colors"
+                    >
+                      Mail &rarr;
+                    </a>
+                    <button
+                      type="button"
+                      class="h-9 px-3.5 rounded-full border border-dark-border bg-dark-surface text-xs font-semibold text-on-dark hover:border-highlighter active:scale-95 transition-all"
+                      @click="copyEmail"
+                    >
+                      {{ emailCopied ? "Copied" : "Copy" }}
+                    </button>
+                  </div>
                 </div>
-                <button
-                  @click="copyEmail"
-                  class="h-8 px-3 rounded bg-surface-muted hover:bg-surface-hover text-text-primary border border-border text-xs font-semibold active:scale-95 transition-all duration-150"
-                >
-                  {{ emailCopied ? 'Copied' : 'Copy' }}
-                </button>
+
+                <!-- Phone / WhatsApp (tel + wa + copy) -->
+                <div class="py-4 flex flex-wrap items-center justify-between gap-3">
+                  <div class="min-w-0">
+                    <div class="font-mono-tabular text-xs text-on-dark-muted">WhatsApp &amp; Phone</div>
+                    <a
+                      :href="profile.phoneHref"
+                      class="font-mono-tabular text-sm sm:text-base font-semibold text-on-dark underline decoration-mint decoration-2 underline-offset-4 hover:text-mint transition-colors"
+                    >
+                      {{ profile.phoneDisplay }}
+                    </a>
+                  </div>
+                  <div class="flex items-center gap-2 shrink-0">
+                    <a
+                      :href="profile.whatsappHref"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      class="h-9 px-3.5 rounded-full border border-dark-border bg-dark-surface text-xs font-semibold text-on-dark inline-flex items-center hover:border-mint transition-colors"
+                    >
+                      WhatsApp &nearr;
+                    </a>
+                    <button
+                      type="button"
+                      class="h-9 px-3.5 rounded-full border border-dark-border bg-dark-surface text-xs font-semibold text-on-dark hover:border-mint active:scale-95 transition-all"
+                      @click="copyPhone"
+                    >
+                      {{ phoneCopied ? "Copied" : "Copy" }}
+                    </button>
+                  </div>
+                </div>
               </div>
 
-              <!-- Phone Row -->
-              <div class="p-3 bg-surface-card border border-border rounded-lg flex items-center justify-between gap-2">
-                <div class="flex flex-col">
-                  <span class="text-[11px] text-text-tertiary font-medium">WhatsApp and phone</span>
-                  <span class="font-mono text-xs sm:text-sm font-semibold text-text-primary">+62 813 1819 0212</span>
-                </div>
-                <button
-                  @click="copyPhone"
-                  class="h-8 px-3 rounded bg-surface-muted hover:bg-surface-hover text-text-primary border border-border text-xs font-semibold active:scale-95 transition-all duration-150"
-                >
-                  {{ phoneCopied ? 'Copied' : 'Copy' }}
-                </button>
-              </div>
-
-              <!-- LinkedIn & GitHub Links -->
-              <div class="grid grid-cols-2 gap-2.5">
+              <!-- Profile & CV Links -->
+              <div class="flex flex-wrap items-center gap-3 pt-2">
                 <a
-                  href="https://www.linkedin.com/in/titoadhityapratama"
+                  :href="cvHref"
                   target="_blank"
-                  rel="noopener"
-                  class="h-9 px-3 rounded-md bg-surface-card hover:bg-surface-muted border border-border text-xs font-semibold text-text-primary flex items-center justify-center gap-1.5 active:scale-95 transition-all duration-150"
+                  rel="noopener noreferrer"
+                  class="pill-cta pill-cta-inverted h-10 px-5 text-xs sm:text-sm"
                 >
-                  <span>LinkedIn</span>
-                  <svg class="w-3.5 h-3.5 text-text-tertiary" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <line x1="7" y1="17" x2="17" y2="7"></line>
-                    <polyline points="7 7 17 7 17 17"></polyline>
+                  <span>Download CV (PDF)</span>
+                  <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M7 17 17 7" />
+                    <path d="M7 7h10v10" />
                   </svg>
                 </a>
 
                 <a
-                  href="https://github.com/TitoAdhitya06"
+                  :href="profile.github"
                   target="_blank"
-                  rel="noopener"
-                  class="h-9 px-3 rounded-md bg-surface-card hover:bg-surface-muted border border-border text-xs font-semibold text-text-primary flex items-center justify-center gap-1.5 active:scale-95 transition-all duration-150"
+                  rel="noopener noreferrer"
+                  class="btn-dark-outline h-10 px-4 text-xs sm:text-sm"
                 >
                   <span>GitHub</span>
-                  <svg class="w-3.5 h-3.5 text-text-tertiary" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <line x1="7" y1="17" x2="17" y2="7"></line>
-                    <polyline points="7 7 17 7 17 17"></polyline>
-                  </svg>
+                  <span aria-hidden="true">&nearr;</span>
+                </a>
+
+                <a
+                  :href="profile.linkedin"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="btn-dark-outline h-10 px-4 text-xs sm:text-sm"
+                >
+                  <span>LinkedIn</span>
+                  <span aria-hidden="true">&nearr;</span>
                 </a>
               </div>
+            </div>
 
-              <!-- Message Draft Form -->
-              <form @submit.prevent="submitMessage" class="flex flex-col gap-3 pt-2">
-                <!-- Honeypot anti-spam field -->
-                <input
-                  v-model="botcheck"
-                  type="checkbox"
-                  name="botcheck"
-                  class="hidden"
-                  style="display: none;"
-                  tabindex="-1"
-                  autocomplete="off"
-                />
-                <div>
-                  <label for="name" class="block text-xs font-semibold text-text-secondary mb-1">Your name</label>
-                  <input
-                    id="name"
-                    v-model="form.name"
-                    type="text"
-                    required
-                    :disabled="isSubmitting"
-                    placeholder="Your name"
-                    class="w-full h-9 px-3 bg-surface-card border border-border-strong rounded-md text-xs sm:text-sm text-text-primary focus:outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/30 disabled:opacity-60 disabled:cursor-not-allowed"
-                  />
+            <!-- Right 6 Cols: Tilted Warm-Paper Note Form with Yellow Offset Shadow -->
+            <div class="lg:col-span-6">
+              <div class="contact-note-card p-6 sm:p-8">
+                <div class="flex flex-wrap items-center justify-between gap-2 pb-4 mb-5 border-b border-hairline">
+                  <h3 class="font-display text-2xl font-semibold text-ink">
+                    Leave a note
+                  </h3>
+                  <span class="px-2.5 py-1 rounded-full bg-surface-muted border border-hairline font-mono-tabular text-xs text-ink-secondary">
+                    Direct message
+                  </span>
                 </div>
-                <div>
-                  <label for="email" class="block text-xs font-semibold text-text-secondary mb-1">Email address</label>
-                  <input
-                    id="email"
-                    v-model="form.email"
-                    type="email"
-                    required
-                    :disabled="isSubmitting"
-                    placeholder="name@company.com"
-                    class="w-full h-9 px-3 bg-surface-card border border-border-strong rounded-md text-xs sm:text-sm text-text-primary focus:outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/30 disabled:opacity-60 disabled:cursor-not-allowed"
-                  />
-                </div>
-                <div>
-                  <label for="message" class="block text-xs font-semibold text-text-secondary mb-1">Message</label>
-                  <textarea
-                    id="message"
-                    v-model="form.message"
-                    required
-                    :disabled="isSubmitting"
-                    rows="3"
-                    placeholder="Tell me about your team or project..."
-                    class="w-full p-3 bg-surface-card border border-border-strong rounded-md text-xs sm:text-sm text-text-primary focus:outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/30 resize-y disabled:opacity-60 disabled:cursor-not-allowed"
-                  ></textarea>
-                </div>
-                <button
-                  type="submit"
-                  :disabled="isSubmitting"
-                  class="w-full h-9 rounded-md bg-primary-600 hover:bg-primary-700 text-white text-xs font-semibold active:scale-95 transition-all duration-150 shadow-sm disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+
+                <form
+                  ref="contactFormEl"
+                  class="space-y-4"
+                  @submit.prevent="submitMessage"
                 >
-                  <svg
-                    v-if="isSubmitting"
-                    class="animate-spin h-3.5 w-3.5 text-white"
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
+                  <!-- Honeypot field -->
+                  <input
+                    v-model="botcheck"
+                    type="checkbox"
+                    name="botcheck"
+                    class="hidden"
+                    tabindex="-1"
+                    autocomplete="off"
+                  />
+
+                  <div>
+                    <label for="contact-name" class="block font-mono-tabular text-xs font-semibold uppercase tracking-wide text-ink mb-1.5">
+                      Your name
+                    </label>
+                    <input
+                      id="contact-name"
+                      v-model="form.name"
+                      name="name"
+                      type="text"
+                      required
+                      autocomplete="name"
+                      :disabled="isSubmitting"
+                      data-error="contact-name-error"
+                      placeholder="Your name or team"
+                      class="field-input"
+                    />
+                    <div id="contact-name-error" class="field-error">
+                      <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <circle cx="12" cy="12" r="10" />
+                        <line x1="12" y1="8" x2="12" y2="12" />
+                        <line x1="12" y1="16" x2="12.01" y2="16" />
+                      </svg>
+                      <span>Please enter your name.</span>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label for="contact-email" class="block font-mono-tabular text-xs font-semibold uppercase tracking-wide text-ink mb-1">
+                      Email address
+                    </label>
+                    <span id="contact-email-hint" class="block text-xs text-ink-tertiary mb-1.5">
+                      Format: name@company.com
+                    </span>
+                    <input
+                      id="contact-email"
+                      v-model="form.email"
+                      name="email"
+                      type="email"
+                      required
+                      autocomplete="email"
+                      :disabled="isSubmitting"
+                      aria-describedby="contact-email-hint"
+                      data-error="contact-email-error"
+                      placeholder="name@company.com"
+                      class="field-input"
+                    />
+                    <div id="contact-email-error" class="field-error">
+                      <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <circle cx="12" cy="12" r="10" />
+                        <line x1="12" y1="8" x2="12" y2="12" />
+                        <line x1="12" y1="16" x2="12.01" y2="16" />
+                      </svg>
+                      <span>Please enter a valid email address, such as name@company.com.</span>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label for="contact-message" class="block font-mono-tabular text-xs font-semibold uppercase tracking-wide text-ink mb-1.5">
+                      Message
+                    </label>
+                    <textarea
+                      id="contact-message"
+                      v-model="form.message"
+                      name="message"
+                      rows="4"
+                      required
+                      minlength="8"
+                      :disabled="isSubmitting"
+                      data-error="contact-message-error"
+                      placeholder="Share details about the role, project scope, or timeline..."
+                      class="field-input resize-y"
+                    ></textarea>
+                    <div id="contact-message-error" class="field-error">
+                      <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <circle cx="12" cy="12" r="10" />
+                        <line x1="12" y1="8" x2="12" y2="12" />
+                        <line x1="12" y1="16" x2="12.01" y2="16" />
+                      </svg>
+                      <span>Please enter a message of at least 8 characters.</span>
+                    </div>
+                  </div>
+
+                  <div class="pt-1">
+                    <button
+                      type="submit"
+                      :disabled="isSubmitting"
+                      class="pill-cta w-full h-11 text-sm disabled:opacity-60 disabled:cursor-not-allowed"
+                    >
+                      <svg
+                        v-if="isSubmitting"
+                        class="btn-spinner w-4 h-4"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        aria-hidden="true"
+                      >
+                        <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="3" opacity="0.25" />
+                        <path d="M21 12a9 9 0 0 0-9-9" stroke="currentColor" stroke-width="3" stroke-linecap="round" />
+                      </svg>
+                      <span>{{ isSubmitting ? "Sending message..." : "Send message" }}</span>
+                      <span v-if="!isSubmitting" aria-hidden="true">&rarr;</span>
+                    </button>
+                  </div>
+
+                  <div
+                    v-if="formFeedback"
+                    role="status"
+                    class="rounded-inner border px-3.5 py-2.5 text-xs sm:text-sm font-medium flex items-start gap-2"
+                    :class="formFeedback.type === 'success'
+                      ? 'bg-[#E9F6EE] border-success text-success'
+                      : 'bg-[#FDF0EE] border-danger text-danger'"
                   >
-                    <circle
-                      class="opacity-25"
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      stroke-width="4"
-                    ></circle>
-                    <path
-                      class="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                    ></path>
-                  </svg>
-                  <span>{{ isSubmitting ? 'Sending...' : 'Send message' }}</span>
-                </button>
-              </form>
+                    <span>{{ formFeedback.text }}</span>
+                  </div>
+                </form>
+              </div>
             </div>
           </div>
         </div>
       </section>
     </main>
 
-    <!-- Footer -->
-    <footer class="mt-auto border-t border-border bg-surface-card py-8">
-      <div class="max-w-[1180px] mx-auto px-4 sm:px-6 flex flex-wrap items-center justify-between gap-4 text-xs text-text-tertiary">
-        <div>
-          <strong>Tito Adhitya Pratama</strong>, front-end developer portfolio
+    <!-- ============================================================
+         Minimal Editorial Footer
+         ============================================================ -->
+    <footer data-paper-zone class="site-footer bg-drafting-paper border-t-[1.5px] border-ink py-8">
+      <div class="max-w-[1220px] mx-auto px-4 sm:px-6 lg:px-8 flex flex-wrap items-center justify-between gap-4 text-xs sm:text-sm text-ink-secondary">
+        <div class="flex flex-wrap items-center gap-x-3 gap-y-1">
+          <span class="font-display font-semibold text-base text-ink">{{ profile.name }}</span>
+          <span class="font-mono-tabular text-xs text-ink-tertiary">{{ profile.location }} ({{ profile.timezone }})</span>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-4 font-mono-tabular text-xs">
+          <a
+            :href="cvHref"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="text-ink hover:text-vermilion underline underline-offset-4"
+          >
+            CV PDF
+          </a>
+          <a
+            :href="profile.github"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="text-ink hover:text-vermilion underline underline-offset-4"
+          >
+            GitHub
+          </a>
+          <a
+            :href="profile.linkedin"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="text-ink hover:text-vermilion underline underline-offset-4"
+          >
+            LinkedIn
+          </a>
+          <a href="#top" class="text-ink hover:text-vermilion underline underline-offset-4">
+            Top &uarr;
+          </a>
         </div>
       </div>
     </footer>
 
-    <!-- ============================================================
-         Project Detail Modal Dialog (Exact match from prototype.html)
-         ============================================================ -->
-    <Teleport to="body">
+    <!-- Native Top-Layer Project Lightbox Dialog -->
+    <ProjectLightboxDialog ref="lightboxRef" />
+
+    <!-- Interruptible Toast Notification -->
+    <div
+      class="fixed bottom-5 right-5 z-50 pointer-events-none max-w-[calc(100vw-40px)]"
+      role="status"
+      aria-live="polite"
+    >
       <div
-        id="projectModal"
-        class="modal-overlay"
-        :class="{ open: isModalOpen }"
-        @click.self="closeModal"
+        v-if="toastVisible"
+        class="pointer-events-auto rounded-card border-[1.5px] border-ink bg-surface px-4 py-3 shadow-[4px_4px_0_var(--border-strong)] flex items-center gap-2.5 text-sm font-medium text-ink"
+        @mouseenter="pauseToastTimer"
+        @mouseleave="resumeToastTimer"
+        @focusin="pauseToastTimer"
+        @focusout="resumeToastTimer"
       >
-        <div class="modal-dialog" role="dialog" aria-modal="true" aria-labelledby="modalProjectTitle">
-          <div class="modal-header">
-            <h3 id="modalProjectTitle" style="font-size: 1.25rem; font-weight: 700; color: var(--text-primary);">
-              {{ selectedProject?.title }}
-            </h3>
-            <button class="icon-btn" @click="closeModal" aria-label="Close modal dialog">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <line x1="18" y1="6" x2="6" y2="18"></line>
-                <line x1="6" y1="6" x2="18" y2="18"></line>
-              </svg>
-            </button>
-          </div>
-
-          <div class="modal-body">
-            <!-- Gallery Viewer with Clickable Dots & Crossfade -->
-            <div class="gallery-viewer">
-              <div
-                class="gallery-img-container"
-                :class="{ 'is-mobile-container': isCurrentMobileShot }"
-              >
-                <!-- Mobile UI Badge -->
-                <div v-if="isCurrentMobileShot" class="mobile-badge">
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                    <rect width="14" height="20" x="5" y="2" rx="2" ry="2"></rect>
-                    <path d="M12 18h.01"></path>
-                  </svg>
-                  <span>Mobile View</span>
-                </div>
-
-                <img
-                  id="modalGalleryImg"
-                  :src="selectedProject?.gallery[currentGalleryIndex]"
-                  :alt="selectedProject?.title"
-                  class="gallery-img"
-                  :class="{ crossfading: isGalleryCrossfading, 'is-mobile-shot': isCurrentMobileShot }"
-                />
-              </div>
-              <div class="gallery-nav-row">
-                <button class="btn btn-secondary btn-sm" @click="prevImage" aria-label="Previous image">
-                  &larr; Prev
-                </button>
-                <div class="gallery-dots">
-                  <button
-                    v-for="(_, idx) in selectedProject?.gallery"
-                    :key="idx"
-                    @click="setGalleryIndex(idx)"
-                    class="gallery-dot"
-                    :class="{ active: idx === currentGalleryIndex }"
-                    :aria-label="`Go to screenshot ${idx + 1}`"
-                  ></button>
-                </div>
-                <span style="font-size: 0.8125rem; color: var(--text-tertiary); font-weight: 600; font-variant-numeric: tabular-nums;">
-                  {{ currentGalleryIndex + 1 }} / {{ selectedProject?.gallery.length }}
-                </span>
-                <button class="btn btn-secondary btn-sm" @click="nextImage">
-                  Next &rarr;
-                </button>
-              </div>
-            </div>
-
-            <div>
-              <span class="meta-text" style="text-transform: uppercase; letter-spacing: 0.04em; color: var(--primary-600); font-weight: 700;">
-                {{ selectedProject?.category }}
-              </span>
-              <p style="margin-top: 8px; font-size: 0.9375rem; line-height: 1.6; color: var(--text-secondary);">
-                {{ selectedProject?.description }}
-              </p>
-            </div>
-
-            <!-- Key Engineering Highlights -->
-            <div v-if="selectedProject?.highlights?.length">
-              <span class="meta-text" style="font-weight: 700; color: var(--text-primary); display: block; margin-bottom: 8px;">
-                Key Engineering Highlights
-              </span>
-              <ul class="space-y-2 list-disc list-inside text-xs sm:text-sm text-text-secondary">
-                <li v-for="(highlight, hIdx) in selectedProject.highlights" :key="hIdx" class="leading-relaxed">
-                  {{ highlight }}
-                </li>
-              </ul>
-            </div>
-
-            <div>
-              <span class="meta-text" style="font-weight: 700; color: var(--text-primary); display: block; margin-bottom: 8px;">
-                Tech Stack
-              </span>
-              <div class="pill-tags-wrap" style="border: none; padding: 0;">
-                <span
-                  v-for="tech in selectedProject?.techStack"
-                  :key="tech"
-                  class="tag-chip"
-                >
-                  {{ tech }}
-                </span>
-              </div>
-            </div>
-
-            <!-- Source Repository Link -->
-            <div v-if="selectedProject?.github" class="pt-2">
-              <a
-                :href="selectedProject.github"
-                target="_blank"
-                rel="noopener noreferrer"
-                class="inline-flex items-center gap-2 px-3.5 py-2 rounded-md bg-surface-muted hover:bg-surface-card border border-border text-xs font-semibold text-text-primary transition-colors"
-              >
-                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
-                  <path fill-rule="evenodd" clip-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" />
-                </svg>
-                <span>View source repository</span>
-                <svg class="w-3.5 h-3.5 text-text-tertiary" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                  <line x1="7" y1="17" x2="17" y2="7"></line>
-                  <polyline points="7 7 17 7 17 17"></polyline>
-                </svg>
-              </a>
-            </div>
-          </div>
-        </div>
+        <span class="w-2 h-2 rounded-full bg-success shrink-0" aria-hidden="true"></span>
+        <span>{{ toastMessage }}</span>
       </div>
-    </Teleport>
+    </div>
 
-    <!-- Toast Notification (DESIGN.md Section 5 & 6) -->
-    <Teleport to="body">
-      <div class="fixed bottom-6 right-6 z-50 flex flex-col gap-2.5 pointer-events-none">
-        <transition name="toast-slide">
-          <div
-            v-if="toastVisible"
-            class="bg-surface-card border border-border-strong rounded-md px-4 py-3 shadow-lg flex items-center gap-2.5 text-sm font-semibold text-text-primary pointer-events-auto"
-          >
-            <svg class="w-4 h-4 text-success-500 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-              <polyline points="20 6 9 17 4 12"></polyline>
-            </svg>
-            <span>{{ toastMessage }}</span>
-          </div>
-        </transition>
-      </div>
-    </Teleport>
+    <!-- Single polite live region for blur validation announcements -->
+    <div ref="liveAnnouncerEl" aria-live="polite" class="visually-hidden"></div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from "vue";
+import { computed, onMounted, onUnmounted, reactive, ref } from "vue";
+import InteractivePaperGrid from "~/components/InteractivePaperGrid.vue";
+import ProjectLightboxDialog from "~/components/ProjectLightboxDialog.vue";
+import {
+  capabilityGroups,
+  collaborationMeta,
+  craftTracks,
+  experience,
+  navLinks,
+  profile,
+  projects,
+  type CraftTrack,
+  type ProjectItem,
+} from "~/data/portfolio";
 
 const config = useRuntimeConfig();
+const cvHref = computed(() => `/CV_Tito_Adhitya_Pratama.pdf?v=${config.public.cvVersion}`);
 
-// --- Project Interface ---
-interface Project {
-  id: number;
-  title: string;
-  category: string;
-  categoryType: "internal" | "spa" | "mobile";
-  context: string;
-  image: string;
-  gallery: string[];
-  description: string;
-  techStack: string[];
-  highlights?: string[];
-  github?: string;
-}
+// --- Header & Scroll Adaptation ---
+const headerEl = ref<HTMLElement | null>(null);
+const craftSectionEl = ref<HTMLElement | null>(null);
+const contactSectionEl = ref<HTMLElement | null>(null);
+const isHeaderOnDark = ref(false);
+const activeSection = ref("works");
+const isMobileMenuOpen = ref(false);
 
-// --- Navigation Items ---
-const navItems = [
-  { id: "projects", label: "Projects" },
-  { id: "skills", label: "Skills" },
-  { id: "experience", label: "Experience" },
-  { id: "about", label: "About" },
-  { id: "contact", label: "Contact" },
+let manualNavFlag = false;
+let manualNavTimer: ReturnType<typeof setTimeout> | null = null;
+
+const handleNavClick = (id: string) => {
+  activeSection.value = id;
+  isMobileMenuOpen.value = false;
+  manualNavFlag = true;
+  if (manualNavTimer) clearTimeout(manualNavTimer);
+  manualNavTimer = setTimeout(() => {
+    manualNavFlag = false;
+  }, 800);
+};
+
+const updateHeaderAndScrollSpy = () => {
+  const headerHeight = headerEl.value?.offsetHeight || 68;
+  const headerMid = headerHeight / 2;
+
+  const darkSections = [craftSectionEl.value, contactSectionEl.value];
+  isHeaderOnDark.value = darkSections.some((el) => {
+    if (!el) return false;
+    const rect = el.getBoundingClientRect();
+    return rect.top <= headerMid && rect.bottom > headerMid;
+  });
+
+  if (manualNavFlag) return;
+
+  if (window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 40) {
+    activeSection.value = "contact";
+    return;
+  }
+
+  const orderedIds = ["contact", "experience", "craft", "works"];
+  for (const id of orderedIds) {
+    const el = document.getElementById(id);
+    if (el && el.getBoundingClientRect().top <= headerHeight + 80) {
+      activeSection.value = id;
+      return;
+    }
+  }
+  activeSection.value = "works";
+};
+
+// --- WCAG 2.2.2 Motion Pause Control ---
+const isMotionPaused = ref(false);
+const isPaperCanvasActive = ref(false);
+
+const toggleMotion = () => {
+  isMotionPaused.value = !isMotionPaused.value;
+  document.documentElement.classList.toggle("motion-paused", isMotionPaused.value);
+  try {
+    localStorage.setItem("tap-motion-paused", isMotionPaused.value ? "true" : "false");
+  } catch {
+    // Ignore storage write restriction
+  }
+};
+
+// --- Works Filter & Inline Screen Switchers ---
+const filterOptions = [
+  { label: "All (4)", value: "all" as const },
+  { label: "Web Systems (3)", value: "web" as const },
+  { label: "Native Android (1)", value: "android" as const },
 ];
-
-// --- Filter System ---
-const filters = [
-  { label: "All Projects (4)", value: "all" },
-  { label: "Internal Systems", value: "internal" },
-  { label: "Web Applications", value: "spa" },
-  { label: "Mobile Applications", value: "mobile" },
-];
-const activeFilter = ref("all");
-
-// --- Real Project Data Matching CV ---
-const projects: Project[] = [
-  {
-    id: 1,
-    title: "DapurGo, Internal Ordering and Staff System",
-    category: "Internal Web System",
-    categoryType: "internal",
-    context: "PT. Daya Gagas Internasional (4 months internship)",
-    image: "/images/dapurgo-1.png",
-    gallery: [
-      "/images/dapurgo-1.png",
-      "/images/dapurgo-2.png",
-      "/images/dapurgo-3.png",
-      "/images/dapurgo-4.png",
-    ],
-    description:
-      "Internal web application for meal ordering and inventory management. Implemented responsive interfaces in Vue.js and JavaScript from Figma designs. Built CRUD features for product, dish, and supplier modules with RESTful API integration. Maintained reusable Vue components across dashboard views and collaborated via GitLab and ClickUp in an agile team.",
-    techStack: ["Vue.js", "JavaScript", "Tailwind CSS", "REST API", "GitLab", "ClickUp"],
-    highlights: [
-      "Built responsive pages for the DapurGo web app using Vue.js and JavaScript based on Figma prototypes.",
-      "Implemented CRUD features for Product, Dish, and Supplier modules with RESTful API integration.",
-      "Developed reusable Vue components to maintain UI consistency across multiple dashboard pages.",
-      "Collaborated via GitLab, ClickUp, and Google Meet in a cross-functional agile team.",
-    ],
-  },
-  {
-    id: 2,
-    title: "Laboratory Inventory Management System",
-    category: "Single Page Application (SPA)",
-    categoryType: "spa",
-    context: "Senior High School 53 Jakarta, Computer Lab",
-    image: "/images/inventaris-1.png",
-    gallery: [
-      "/images/inventaris-1.png",
-      "/images/inventaris-2.png",
-      "/images/inventaris-3.png",
-      "/images/inventaris-4.png",
-    ],
-    description:
-      "Web SPA replacing manual asset tracking with CRUD operations, loan management, and asset history logs. Includes role-based access control, Chart.js analytics dashboard, dark mode, and PDF/CSV data exports.",
-    techStack: ["Vue.js", "Laravel", "Inertia.js", "Tailwind CSS", "MySQL", "Chart.js"],
-    highlights: [
-      "Built a web-based SPA replacing manual asset tracking with CRUD, loan management, and asset history logging.",
-      "Implemented Role-Based Access Control (RBAC) with secure session handling.",
-      "Built interactive Chart.js analytics dashboard, dark mode toggle, and automated PDF and CSV export functionality.",
-    ],
-  },
-  {
-    id: 3,
-    title: "ClipSync, Local Network Clipboard and File Sharing",
-    category: "Real-Time Web Application",
-    categoryType: "spa",
-    context: "Personal Open-Source Project",
-    image: "/images/clipsync-1.png",
-    gallery: [
-      "/images/clipsync-1.png",
-      "/images/clipsync-2.png",
-      "/images/clipsync-3.jpg",
-      "/images/clipsync-4.png",
-    ],
-    github: "https://github.com/TitoAdhitya06/ClipSync",
-    description:
-      "Real-time clipboard and file sharing tool for devices on the same local network without external internet. Features multi-room sessions with QR code pairing, instant WebSocket synchronization, file uploads up to 50 MB, and auto-expiring storage backed by Redis pub/sub and Docker.",
-    techStack: ["Vue.js", "Nuxt", "Bun", "Redis", "TypeScript", "Docker"],
-    highlights: [
-      "Created a real-time clipboard and file sharing app for devices on the same local network using WebSocket and Redis pub/sub.",
-      "Supports multi-room sessions with QR Code access and real-time sync via WebSocket.",
-      "Handles file uploads up to 50 MB with auto-expiring storage.",
-      "Containerized backend service using Docker and Bun runtime for high throughput.",
-    ],
-  },
-  {
-    id: 4,
-    title: "SpaceBridge, Cloud-Synced Notes & Direct Google Drive Hub",
-    category: "Native Android Application",
-    categoryType: "mobile",
-    context: "Personal Open-Source Project",
-    image: "/images/SpaceBridge-1.jpeg",
-    gallery: [
-      "/images/SpaceBridge-1.jpeg",
-      "/images/SpaceBridge-2.jpeg",
-      "/images/SpaceBridge-3.jpeg",
-      "/images/SpaceBridge-4.jpeg",
-      "/images/SpaceBridge-5.jpeg",
-      "/images/SpaceBridge-6.jpeg",
-      "/images/SpaceBridge-7.jpeg",
-    ],
-    github: "https://github.com/TitoAdhitya06/SpaceBridge.git",
-    description:
-      "Native Android application bridging local notes with direct Google Drive cloud storage. Solves note isolation across devices and Second Space environments using Cloud Firestore, while eliminating context switching through in-app file cataloging and resilient background uploads using AndroidX WorkManager.",
-    techStack: [
-      "Kotlin",
-      "Jetpack Compose",
-      "Material 3",
-      "Cloud Firestore",
-      "Google Drive API",
-      "WorkManager",
-      "Clean Architecture",
-    ],
-    highlights: [
-      "Built an offline-first architecture with Cloud Firestore syncing notes across multi-device setups and Android Second Space environments.",
-      "Integrated Google Drive REST API v3 for in-app file uploads, catalog browsing, and downloads directly to the /SpaceBridge folder.",
-      "Implemented chunked resumable background uploads (8 MB streaming) using AndroidX WorkManager to survive connection drops and app terminations.",
-      "Designed incremental permission scopes requesting Google Drive access contextually only when entering the file catalog.",
-      "Secured user data end-to-end with granular Firestore Security Rules validated by user UID ownership.",
-    ],
-  },
-];
+const activeFilter = ref<"all" | "web" | "android">("all");
 
 const filteredProjects = computed(() => {
   if (activeFilter.value === "all") return projects;
-  return projects.filter((p) => p.categoryType === activeFilter.value);
+  return projects.filter((p) => p.filterGroup === activeFilter.value);
 });
 
-// --- Theme State (Warm Dark Mode) ---
-const isDark = ref(false);
+const projectScreenMap = reactive<Record<number, number>>({
+  1: 0,
+  2: 0,
+  3: 0,
+  4: 0,
+});
+const spaceBridgeMode = ref<"light" | "dark">("light");
 
-const toggleTheme = () => {
-  isDark.value = !isDark.value;
-  localStorage.setItem("theme-preference", isDark.value ? "dark" : "light");
-  applyTheme();
-};
-
-const applyTheme = () => {
-  if (isDark.value) {
-    document.documentElement.classList.add("dark");
-    document.documentElement.setAttribute("data-theme", "dark");
-  } else {
-    document.documentElement.classList.remove("dark");
-    document.documentElement.removeAttribute("data-theme");
-  }
-};
-
-// --- Scroll State & Scrollspy ---
-const isScrolled = ref(false);
-const activeSection = ref("projects");
-let isManualNav = false;
-let manualNavTimer: any = null;
-
-const setActive = (id: string) => {
-  activeSection.value = id;
-  isMobileMenuOpen.value = false;
-  isManualNav = true;
-  if (manualNavTimer) clearTimeout(manualNavTimer);
-  manualNavTimer = setTimeout(() => {
-    isManualNav = false;
-  }, 900);
-};
-
-const onScroll = () => {
-  isScrolled.value = window.scrollY > 20;
-
-  if (isManualNav) return;
-
-  // 1. Bottom of page threshold (activates contact when reaching end of page)
-  const scrollPosition = window.scrollY + window.innerHeight;
-  const documentHeight = document.documentElement.scrollHeight;
-  if (scrollPosition >= documentHeight - 50) {
-    activeSection.value = "contact";
-    return;
-  }
-
-  // 2. Check contact section
-  const contactEl = document.getElementById("contact");
-  if (contactEl && contactEl.getBoundingClientRect().top <= 180) {
-    activeSection.value = "contact";
-    return;
-  }
-
-  // 3. Check experience & about sections
-  const aboutEl = document.getElementById("about");
-  const expEl = document.getElementById("experience");
-  const isDesktop = window.innerWidth >= 1024;
-
-  if (aboutEl && expEl) {
-    const aboutRect = aboutEl.getBoundingClientRect();
-    const expRect = expEl.getBoundingClientRect();
-
-    if (isDesktop) {
-      // On desktop: experience and about sit side-by-side in the same grid.
-      // Highlight experience first when entering the section.
-      // Transition to about once scrolled into the bio/details area (offset by 80px).
-      if (aboutRect.top <= -80 && aboutRect.bottom > 140) {
-        activeSection.value = "about";
-        return;
-      }
-      if (expRect.top <= 180 && expRect.bottom > 140) {
-        activeSection.value = "experience";
-        return;
-      }
-    } else {
-      // On mobile: about is stacked below experience.
-      if (aboutRect.top <= 180) {
-        activeSection.value = "about";
-        return;
-      }
-      if (expRect.top <= 180) {
-        activeSection.value = "experience";
-        return;
-      }
-    }
-  }
-
-  // 4. Check skills section
-  const skillsEl = document.getElementById("skills");
-  if (skillsEl && skillsEl.getBoundingClientRect().top <= 180) {
-    activeSection.value = "skills";
-    return;
-  }
-
-  // 5. Default to projects
-  activeSection.value = "projects";
-};
-
-// --- Mobile Menu State ---
-const isMobileMenuOpen = ref(false);
-
-const handleResize = () => {
-  if (window.innerWidth >= 768 && isMobileMenuOpen.value) {
-    isMobileMenuOpen.value = false;
-  }
-};
-
-// --- Modal Gallery State ---
-const isModalOpen = ref(false);
-const selectedProject = ref<Project | null>(null);
-const currentGalleryIndex = ref(0);
-const isGalleryCrossfading = ref(false);
-
-const isCurrentMobileShot = computed(() => {
-  if (!selectedProject.value) return false;
-  const currentImg = selectedProject.value.gallery[currentGalleryIndex.value];
-  return Boolean(
-    (currentImg && (currentImg.includes("clipsync-3") || currentImg.includes("spacebridge"))) ||
-    selectedProject.value.categoryType === "mobile"
-  );
+const activeSpaceBridgePair = computed(() => {
+  const sb = projects.find((p) => p.slug === "spacebridge");
+  if (!sb) return [];
+  return spaceBridgeMode.value === "light" ? sb.screens.slice(0, 2) : sb.screens.slice(2, 4);
 });
 
-const openModal = (project: Project) => {
-  selectedProject.value = project;
-  currentGalleryIndex.value = 0;
-  isModalOpen.value = true;
-  document.body.style.overflow = "hidden";
+const getActiveScreenIndex = (project: ProjectItem) => {
+  if (project.isDualPortrait) {
+    return spaceBridgeMode.value === "light" ? 0 : 2;
+  }
+  return projectScreenMap[project.id] || 0;
 };
 
-const closeModal = () => {
-  isModalOpen.value = false;
-  document.body.style.overflow = "auto";
-  setTimeout(() => {
-    selectedProject.value = null;
-  }, 200);
+const setProjectScreen = (projectId: number, idx: number) => {
+  projectScreenMap[projectId] = idx;
 };
 
-const setGalleryIndex = (idx: number) => {
-  if (currentGalleryIndex.value === idx) return;
-  isGalleryCrossfading.value = true;
-  setTimeout(() => {
-    currentGalleryIndex.value = idx;
-    isGalleryCrossfading.value = false;
-  }, 100);
+const getCurrentScreen = (project: ProjectItem) => {
+  const idx = getActiveScreenIndex(project);
+  return project.screens[idx] || project.screens[0];
 };
 
-const nextImage = () => {
-  if (!selectedProject.value) return;
-  const total = selectedProject.value.gallery.length;
-  setGalleryIndex((currentGalleryIndex.value + 1) % total);
+const getCurrentCaptionTitle = (project: ProjectItem) => {
+  if (project.isDualPortrait) {
+    return spaceBridgeMode.value === "light" ? "Light UI Pair" : "Dark UI Pair";
+  }
+  return getCurrentScreen(project).label;
 };
 
-const prevImage = () => {
-  if (!selectedProject.value) return;
-  const total = selectedProject.value.gallery.length;
-  setGalleryIndex((currentGalleryIndex.value - 1 + total) % total);
+const getCurrentCaptionBody = (project: ProjectItem) => {
+  if (project.isDualPortrait) {
+    return spaceBridgeMode.value === "light"
+      ? "Synced Firestore notes and checklists paired with the /SpaceBridge Google Drive catalog."
+      : "Material 3 dark theme checklist editor paired with the dark Google Drive file hub.";
+  }
+  return getCurrentScreen(project).caption;
 };
 
-// --- Toast Notification System ---
+// --- Lightbox Modal ---
+const lightboxRef = ref<InstanceType<typeof ProjectLightboxDialog> | null>(null);
+
+const openProjectModal = (project: ProjectItem, initialIndex = 0) => {
+  lightboxRef.value?.open(project, initialIndex);
+};
+
+// --- Dark Craft Stage Tabs ---
+const craftTablistEl = ref<HTMLElement | null>(null);
+const activeCraftId = ref<CraftTrack["id"]>("split");
+const activeCraftTrack = computed(() => {
+  return craftTracks.find((t) => t.id === activeCraftId.value) || craftTracks[0];
+});
+
+const stepCraftTab = (currentIdx: number, delta: number) => {
+  const nextIdx = (currentIdx + delta + craftTracks.length) % craftTracks.length;
+  const nextTrack = craftTracks[nextIdx];
+  if (!nextTrack) return;
+  activeCraftId.value = nextTrack.id;
+  const buttons = craftTablistEl.value?.querySelectorAll<HTMLButtonElement>('[role="tab"]');
+  buttons?.[nextIdx]?.focus();
+};
+
+// --- Toast Notification (Interruptible & Pause on Hover/Focus) ---
 const toastVisible = ref(false);
 const toastMessage = ref("");
-let toastTimeout: any = null;
+let toastTimer: ReturnType<typeof setTimeout> | null = null;
+
+const startToastTimer = () => {
+  if (toastTimer) clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => {
+    toastVisible.value = false;
+  }, 3500);
+};
+
+const pauseToastTimer = () => {
+  if (toastTimer) clearTimeout(toastTimer);
+};
+
+const resumeToastTimer = () => {
+  if (toastVisible.value) startToastTimer();
+};
 
 const triggerToast = (msg: string) => {
   toastMessage.value = msg;
   toastVisible.value = true;
-  if (toastTimeout) clearTimeout(toastTimeout);
-  toastTimeout = setTimeout(() => {
-    toastVisible.value = false;
-  }, 3500);
+  startToastTimer();
 };
 
 // --- Copy Actions ---
@@ -1277,65 +1485,152 @@ const phoneCopied = ref(false);
 
 const copyEmail = async () => {
   try {
-    await navigator.clipboard.writeText("tapwrk1@gmail.com");
-    emailCopied.value = true;
-    triggerToast("Email address copied: tapwrk1@gmail.com");
-    setTimeout(() => {
-      emailCopied.value = false;
-    }, 2000);
+    await navigator.clipboard.writeText(profile.email);
   } catch {
-    triggerToast("Email copied: tapwrk1@gmail.com");
+    // Fallback notification still surfaces exact address
   }
+  emailCopied.value = true;
+  triggerToast(`Copied email: ${profile.email}`);
+  setTimeout(() => {
+    emailCopied.value = false;
+  }, 2000);
 };
 
 const copyPhone = async () => {
   try {
-    await navigator.clipboard.writeText("+6281318190212");
-    phoneCopied.value = true;
-    triggerToast("Phone number copied: +62 813 1819 0212");
-    setTimeout(() => {
-      phoneCopied.value = false;
-    }, 2000);
+    await navigator.clipboard.writeText(profile.phoneRaw);
   } catch {
-    triggerToast("Phone copied: +62 813 1819 0212");
+    // Fallback notification still surfaces exact number
   }
+  phoneCopied.value = true;
+  triggerToast(`Copied phone: ${profile.phoneDisplay}`);
+  setTimeout(() => {
+    phoneCopied.value = false;
+  }, 2000);
 };
 
-// --- Form State ---
-const form = ref({
+// --- Contact Form & Accessible Validation ---
+const contactFormEl = ref<HTMLFormElement | null>(null);
+const liveAnnouncerEl = ref<HTMLDivElement | null>(null);
+const form = reactive({
   name: "",
   email: "",
   message: "",
 });
 const botcheck = ref(false);
 const isSubmitting = ref(false);
+const formFeedback = ref<{ type: "success" | "error"; text: string } | null>(null);
+
+let announceTimer: ReturnType<typeof setTimeout> | null = null;
+let announcedField: Element | null = null;
+const flaggedFields = new WeakSet<Element>();
+const announcedFields = new WeakSet<Element>();
+const fallbackDirtyMap = new WeakMap<Element, { hasInteracted: boolean; hasBlurred: boolean }>();
+
+const linkError = (el: HTMLElement, shown: boolean) => {
+  const errorId = el.dataset.error;
+  if (!errorId) return;
+  const ids = (el.getAttribute("aria-describedby") || "")
+    .split(/\s+/)
+    .filter((id) => id && id !== errorId);
+  if (shown) ids.push(errorId);
+  if (ids.length) el.setAttribute("aria-describedby", ids.join(" "));
+  else el.removeAttribute("aria-describedby");
+};
+
+const spokenText = (node: HTMLElement) => {
+  const copy = node.cloneNode(true) as HTMLElement;
+  copy.querySelectorAll('[aria-hidden="true"]').forEach((n) => n.remove());
+  return (copy.textContent || "").replace(/\s+/g, " ").trim();
+};
+
+const announceFieldError = (el: HTMLInputElement | HTMLTextAreaElement) => {
+  const errorId = el.dataset.error;
+  if (!errorId || !liveAnnouncerEl.value) return;
+  const errorEl = document.getElementById(errorId);
+  if (!errorEl) return;
+  const label = el.labels?.[0] ? `${spokenText(el.labels[0])}: ` : "";
+  if (announceTimer) clearTimeout(announceTimer);
+  liveAnnouncerEl.value.textContent = "";
+  announcedField = el;
+  announceTimer = setTimeout(() => {
+    if (liveAnnouncerEl.value) {
+      liveAnnouncerEl.value.textContent = `${label}${spokenText(errorEl)}`;
+    }
+  }, 500);
+};
+
+const syncFieldAria = (el: Element | null, announce = false, forceCheck = false) => {
+  if (!el || !(el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement)) return;
+  if (el.name === "botcheck") return;
+
+  const supportsUserInvalid = CSS.supports("selector(:user-invalid)");
+  let isInvalid = false;
+
+  if (supportsUserInvalid) {
+    isInvalid = el.matches(":user-invalid");
+  } else {
+    const state = fallbackDirtyMap.get(el);
+    if (forceCheck || (state?.hasBlurred && state?.hasInteracted)) {
+      isInvalid = !el.validity.valid;
+      el.classList.toggle("user-invalid-fallback", isInvalid);
+    }
+  }
+
+  if (isInvalid) {
+    if (announce && !announcedFields.has(el)) {
+      announceFieldError(el);
+      announcedFields.add(el);
+    }
+    el.setAttribute("aria-invalid", "true");
+    linkError(el, true);
+    flaggedFields.add(el);
+  } else if (flaggedFields.has(el) || el.getAttribute("aria-invalid") !== "true") {
+    el.setAttribute("aria-invalid", "false");
+    linkError(el, false);
+    flaggedFields.delete(el);
+    announcedFields.delete(el);
+    if (!supportsUserInvalid) {
+      el.classList.remove("user-invalid-fallback");
+    }
+    if (announcedField === el) {
+      if (announceTimer) clearTimeout(announceTimer);
+      if (liveAnnouncerEl.value) liveAnnouncerEl.value.textContent = "";
+    }
+  }
+};
 
 const submitMessage = async () => {
   if (isSubmitting.value) return;
+  formFeedback.value = null;
 
-  if (!form.value.name.trim() || !form.value.email.trim() || !form.value.message.trim()) {
+  if (!form.name.trim() || !form.email.trim() || !form.message.trim()) {
     triggerToast("Please fill in all fields.");
     return;
   }
 
-  // Silent reject for bots triggering the honeypot
   if (botcheck.value) {
-    triggerToast("Thank you! Your message has been sent successfully.");
-    form.value = { name: "", email: "", message: "" };
+    formFeedback.value = { type: "success", text: "Thank you. Your message has been sent." };
+    triggerToast("Message sent.");
+    form.name = "";
+    form.email = "";
+    form.message = "";
+    contactFormEl.value?.reset();
     return;
   }
 
   isSubmitting.value = true;
   try {
     const accessKey = (config.public.web3formsAccessKey as string) || "";
-
     if (!accessKey) {
-      // Fallback: open email client directly if access key is not yet configured
-      const subject = encodeURIComponent(`Portfolio Message from ${form.value.name}`);
-      const body = encodeURIComponent(`From: ${form.value.name} (${form.value.email})\n\n${form.value.message}`);
-      window.location.href = `mailto:tapwrk1@gmail.com?subject=${subject}&body=${body}`;
-      triggerToast("Opening email client to send message to tapwrk1@gmail.com...");
-      form.value = { name: "", email: "", message: "" };
+      const subject = encodeURIComponent(`Portfolio Message from ${form.name}`);
+      const body = encodeURIComponent(`From: ${form.name} (${form.email})\n\n${form.message}`);
+      window.location.href = `mailto:${profile.email}?subject=${subject}&body=${body}`;
+      formFeedback.value = {
+        type: "success",
+        text: `Opening your email client to send this note to ${profile.email}.`,
+      };
+      triggerToast("Opening email client...");
       return;
     }
 
@@ -1347,522 +1642,151 @@ const submitMessage = async () => {
       },
       body: JSON.stringify({
         access_key: accessKey,
-        name: form.value.name,
-        email: form.value.email,
-        message: form.value.message,
-        subject: `New portfolio message from ${form.value.name}`,
+        name: form.name,
+        email: form.email,
+        message: form.message,
+        subject: `Portfolio inquiry from ${form.name}`,
         from_name: "Tito Portfolio Website",
       }),
     });
 
     const result = await response.json();
     if (result.success) {
-      triggerToast("Thank you! Your message has been sent successfully.");
-      form.value = { name: "", email: "", message: "" };
+      formFeedback.value = {
+        type: "success",
+        text: "Thank you. Your message has been delivered to Tito's inbox.",
+      };
+      triggerToast("Message sent successfully.");
+      form.name = "";
+      form.email = "";
+      form.message = "";
       botcheck.value = false;
+      contactFormEl.value?.reset();
     } else {
-      triggerToast(result.message || "Failed to send message. Please email tapwrk1@gmail.com directly.");
+      const errText = result.message || `Could not deliver message. Please email ${profile.email} directly.`;
+      formFeedback.value = { type: "error", text: errText };
+      triggerToast(errText);
     }
   } catch {
-    triggerToast("Network error. Please email tapwrk1@gmail.com directly.");
+    const netText = `Network error while sending. Please email ${profile.email} directly.`;
+    formFeedback.value = { type: "error", text: netText };
+    triggerToast(netText);
   } finally {
     isSubmitting.value = false;
   }
 };
 
-// --- Lifecycle Hooks & Intersection Observer ---
-let revealObserver: IntersectionObserver | null = null;
+// --- Lifecycle: Scroll marks, Resize & Validation Hooks ---
+let markObserver: IntersectionObserver | null = null;
+let cleanupFormListeners: (() => void) | null = null;
+
+const handleWindowResize = () => {
+  if (window.innerWidth >= 768 && isMobileMenuOpen.value) {
+    isMobileMenuOpen.value = false;
+  }
+  updateHeaderAndScrollSpy();
+};
+
+const handleWindowKeyDown = (e: KeyboardEvent) => {
+  if (e.key === "Escape" && isMobileMenuOpen.value) {
+    isMobileMenuOpen.value = false;
+  }
+};
 
 onMounted(() => {
-  // Theme initialization: default to light mode for new visitors, preserve previous preference
-  const saved = localStorage.getItem("theme-preference");
-  isDark.value = saved === "dark";
-  applyTheme();
+  isMotionPaused.value = document.documentElement.classList.contains("motion-paused");
 
-  // Scroll & Resize listeners
-  window.addEventListener("scroll", onScroll, { passive: true });
-  window.addEventListener("resize", handleResize, { passive: true });
+  updateHeaderAndScrollSpy();
+  window.addEventListener("scroll", updateHeaderAndScrollSpy, { passive: true });
+  window.addEventListener("resize", handleWindowResize, { passive: true });
+  window.addEventListener("keydown", handleWindowKeyDown);
 
-  // Keyboard Escape for Modal
-  window.addEventListener("keydown", (e: KeyboardEvent) => {
-    if (e.key === "Escape" && isModalOpen.value) {
-      closeModal();
-    }
-  });
+  // Scroll-tied highlighter sweeps, SVG strokes, and subtle editorial reveals
+  const revealNodes = document.querySelectorAll(".reveal-block");
+  revealNodes.forEach((node) => node.setAttribute("data-reveal-ready", "true"));
 
-  // IntersectionObserver for once-only reveal per DESIGN.md Section 6
-  revealObserver = new IntersectionObserver(
+  markObserver = new IntersectionObserver(
     (entries, observer) => {
       entries.forEach((entry) => {
         if (entry.isIntersecting) {
-          entry.target.classList.add("revealed");
+          entry.target.classList.add("is-visible");
           observer.unobserve(entry.target);
         }
       });
     },
-    {
-      threshold: 0.1,
-      rootMargin: "0px 0px -40px 0px",
-    }
+    { threshold: 0.15, rootMargin: "0px 0px -30px 0px" }
   );
 
-  document.querySelectorAll(".reveal-item").forEach((el) => {
-    revealObserver?.observe(el);
+  document.querySelectorAll(".js-scroll-mark, .reveal-block").forEach((el) => {
+    markObserver?.observe(el);
   });
+
+  // Form ARIA & validation sync
+  const formEl = contactFormEl.value;
+  if (formEl) {
+    formEl.querySelectorAll("input, textarea").forEach((el) => {
+      if (el instanceof HTMLInputElement && el.name === "botcheck") return;
+      el.setAttribute("aria-invalid", "false");
+    });
+
+    const onBlur = (e: Event) => {
+      const target = e.target as Element;
+      const state = fallbackDirtyMap.get(target) || { hasInteracted: false, hasBlurred: false };
+      state.hasBlurred = true;
+      fallbackDirtyMap.set(target, state);
+      syncFieldAria(target, true);
+    };
+
+    const onInput = (e: Event) => {
+      const target = e.target as Element;
+      const state = fallbackDirtyMap.get(target) || { hasInteracted: false, hasBlurred: false };
+      state.hasInteracted = true;
+      fallbackDirtyMap.set(target, state);
+      if (target.hasAttribute("aria-invalid")) {
+        syncFieldAria(target, false);
+      }
+    };
+
+    const onInvalid = (e: Event) => {
+      const target = e.target as Element;
+      const state = { hasInteracted: true, hasBlurred: true };
+      fallbackDirtyMap.set(target, state);
+      announcedFields.add(target);
+      syncFieldAria(target, false, true);
+    };
+
+    const onReset = () => {
+      setTimeout(() => {
+        formEl.querySelectorAll("input, textarea").forEach((el) => {
+          fallbackDirtyMap.delete(el);
+          el.classList.remove("user-invalid-fallback");
+          syncFieldAria(el, false);
+        });
+      });
+    };
+
+    formEl.addEventListener("blur", onBlur, true);
+    formEl.addEventListener("input", onInput);
+    formEl.addEventListener("invalid", onInvalid, true);
+    formEl.addEventListener("reset", onReset, true);
+
+    cleanupFormListeners = () => {
+      formEl.removeEventListener("blur", onBlur, true);
+      formEl.removeEventListener("input", onInput);
+      formEl.removeEventListener("invalid", onInvalid, true);
+      formEl.removeEventListener("reset", onReset, true);
+    };
+  }
 });
 
 onUnmounted(() => {
-  window.removeEventListener("scroll", onScroll);
-  window.removeEventListener("resize", handleResize);
-  revealObserver?.disconnect();
+  window.removeEventListener("scroll", updateHeaderAndScrollSpy);
+  window.removeEventListener("resize", handleWindowResize);
+  window.removeEventListener("keydown", handleWindowKeyDown);
+  markObserver?.disconnect();
+  cleanupFormListeners?.();
+  if (manualNavTimer) clearTimeout(manualNavTimer);
+  if (toastTimer) clearTimeout(toastTimer);
+  if (announceTimer) clearTimeout(announceTimer);
 });
 </script>
-
-<style>
-/* ============================================================
-   DESIGN.md System Tokens (Warm Minimalist Theme)
-   Zero gradients, solid colors, WCAG AA compliant.
-   ============================================================ */
-:root {
-  --bg: #FAF7F2;
-  --surface: #FAF7F2;
-  --surface-card: #FFFFFF;
-  --surface-muted: #F3EFEA;
-  --surface-hover: #EDE6DD;
-  --border: #E7E0D6;
-  --border-strong: #D9D0C3;
-  --overlay: rgba(38, 33, 28, 0.6);
-
-  --text-primary: #26211C;
-  --text-secondary: #655D54;
-  --text-tertiary: #8C8276;
-  --text-disabled: #A69E90;
-  --text-on-accent: #FFFFFF;
-
-  --primary-50: #FFF4ED;
-  --primary-100: #FFE4D3;
-  --primary-500: #F97316;
-  --primary-600: #EA580C;
-  --primary-700: #C2410C;
-  --primary-800: #9A3412;
-
-  --success-50: #EDF8F2;
-  --success-500: #2E8B57;
-  --success-600: #195B36;
-
-  --info-50: #EEF5FC;
-  --info-500: #2B70C9;
-  --info-600: #1C4B88;
-
-  --radius-xs: 4px;
-  --radius-sm: 6px;
-  --radius-md: 10px;
-  --radius-lg: 14px;
-  --radius-xl: 20px;
-
-  --shadow-sm: 0 1px 3px rgba(38, 33, 28, 0.05), 0 1px 2px rgba(38, 33, 28, 0.03);
-  --shadow-md: 0 6px 16px rgba(38, 33, 28, 0.07), 0 2px 4px rgba(38, 33, 28, 0.04);
-  --shadow-lg: 0 16px 36px rgba(38, 33, 28, 0.12), 0 4px 8px rgba(38, 33, 28, 0.06);
-
-  --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
-}
-
-html.dark,
-[data-theme="dark"] {
-  --bg: #1C1915;
-  --surface: #1C1915;
-  --surface-card: #26221D;
-  --surface-muted: #302B25;
-  --surface-hover: #38322B;
-  --border: #3D3730;
-  --border-strong: #544C42;
-  --overlay: rgba(10, 8, 6, 0.75);
-
-  --text-primary: #F2ECE3;
-  --text-secondary: #C4BBAE;
-  --text-tertiary: #968D80;
-  --text-disabled: #655E54;
-  --text-on-accent: #FFFFFF;
-
-  --primary-50: #332317;
-  --primary-100: #4B311E;
-  --primary-500: #FB923C;
-  --primary-600: #EA580C;
-  --primary-700: #F97316;
-  --primary-800: #C2410C;
-
-  --success-50: #172D21;
-  --success-500: #3EA668;
-  --success-600: #5CB987;
-
-  --info-50: #1A2836;
-  --info-500: #4A8AC9;
-  --info-600: #6AA5DE;
-
-  --shadow-sm: none;
-  --shadow-md: none;
-  --shadow-lg: 0 16px 36px rgba(0, 0, 0, 0.5);
-}
-
-/* Animations */
-@keyframes heroFadeUp {
-  from {
-    opacity: 0;
-    transform: translateY(12px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.animate-hero-1 { animation: heroFadeUp 250ms var(--ease-out) 40ms both; }
-.animate-hero-2 { animation: heroFadeUp 250ms var(--ease-out) 100ms both; }
-.animate-hero-3 { animation: heroFadeUp 250ms var(--ease-out) 160ms both; }
-.animate-hero-4 { animation: heroFadeUp 250ms var(--ease-out) 220ms both; }
-.animate-hero-aside { animation: heroFadeUp 300ms var(--ease-out) 140ms both; }
-
-/* Scroll Reveal */
-.reveal-item {
-  opacity: 0;
-  transform: translateY(14px);
-  transition: opacity 300ms var(--ease-out), transform 300ms var(--ease-out);
-  will-change: opacity, transform;
-}
-
-.reveal-item.revealed {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-/* Project Filter Transition */
-.project-fade-enter-active {
-  transition: opacity 180ms var(--ease-out), transform 180ms var(--ease-out);
-}
-.project-fade-enter-from {
-  opacity: 0;
-  transform: translateY(6px);
-}
-.project-fade-leave-active {
-  display: none;
-}
-
-/* Toast Transition */
-.toast-slide-enter-active {
-  transition: all 200ms var(--ease-out);
-}
-.toast-slide-leave-active {
-  transition: all 150ms cubic-bezier(0.4, 0, 1, 1);
-}
-.toast-slide-enter-from,
-.toast-slide-leave-to {
-  transform: translateY(16px);
-  opacity: 0;
-}
-
-/* ============================================================
-   Modal Gallery Viewer (Exact match from prototype.html)
-   ============================================================ */
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  background-color: var(--overlay);
-  z-index: 100;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-  opacity: 0;
-  visibility: hidden;
-  transition: opacity 200ms cubic-bezier(0.4, 0, 0.2, 1),
-              visibility 200ms;
-}
-
-.modal-overlay.open {
-  opacity: 1;
-  visibility: visible;
-}
-
-.modal-dialog {
-  background-color: var(--surface-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-xl);
-  max-width: 680px;
-  width: 100%;
-  max-height: 90vh;
-  overflow-y: auto;
-  box-shadow: var(--shadow-lg);
-  transform: scale(0.97) translateY(8px);
-  opacity: 0;
-  transition: transform 300ms cubic-bezier(0.2, 0.8, 0.2, 1),
-              opacity 300ms cubic-bezier(0.2, 0.8, 0.2, 1);
-  display: flex;
-  flex-direction: column;
-}
-
-.modal-overlay.open .modal-dialog {
-  transform: scale(1) translateY(0);
-  opacity: 1;
-}
-
-.modal-header {
-  padding: 20px 24px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  border-bottom: 1px solid var(--border);
-}
-
-.modal-body {
-  padding: 24px;
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-.icon-btn {
-  width: 38px;
-  height: 38px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  background-color: var(--surface-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  color: var(--text-secondary);
-  cursor: pointer;
-  transition: background-color 150ms, border-color 150ms, color 150ms, transform 150ms;
-}
-
-@media (hover: hover) {
-  .icon-btn:hover {
-    background-color: var(--surface-muted);
-    color: var(--text-primary);
-    border-color: var(--border-strong);
-    transform: translateY(-1px);
-  }
-}
-
-.icon-btn:active {
-  transform: translateY(0) scale(0.97);
-}
-
-.gallery-viewer {
-  width: 100%;
-  border-radius: var(--radius-md);
-  overflow: hidden;
-  border: 1px solid var(--border);
-  background-color: var(--surface-muted);
-}
-
-.gallery-img-container {
-  width: 100%;
-  height: 340px;
-  position: relative;
-  overflow: hidden;
-  background-color: var(--surface-muted);
-}
-
-.gallery-img-container.is-mobile-container {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 16px 12px;
-}
-
-.gallery-img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-  transition: opacity 150ms cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.gallery-img.is-mobile-shot {
-  width: auto;
-  max-width: 100%;
-  height: 100%;
-  max-height: 100%;
-  object-fit: contain;
-  border-radius: var(--radius-md);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.16);
-  border: 1px solid var(--border);
-}
-
-.mobile-badge {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  z-index: 5;
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  padding: 3px 8px;
-  border-radius: var(--radius-sm);
-  background-color: var(--surface-card);
-  border: 1px solid var(--border);
-  font-size: 0.6875rem;
-  font-weight: 700;
-  color: var(--text-secondary);
-  box-shadow: var(--shadow-sm);
-}
-
-.gallery-img.crossfading {
-  opacity: 0.35;
-}
-
-/* Mobile Dropdown Transition */
-.mobile-menu-enter-active,
-.mobile-menu-leave-active {
-  transition: opacity 150ms cubic-bezier(0.2, 0.8, 0.2, 1), transform 150ms cubic-bezier(0.2, 0.8, 0.2, 1);
-}
-
-.mobile-menu-enter-from,
-.mobile-menu-leave-to {
-  opacity: 0;
-  transform: translateY(-6px);
-}
-
-.gallery-nav-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 10px 14px;
-  background-color: var(--surface-card);
-  border-top: 1px solid var(--border);
-}
-
-.gallery-dots {
-  display: flex;
-  gap: 6px;
-  align-items: center;
-}
-
-.gallery-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 9999px;
-  background-color: var(--border-strong);
-  border: none;
-  cursor: pointer;
-  padding: 0;
-  transition: background-color 150ms, width 150ms;
-}
-
-.gallery-dot.active {
-  background-color: var(--primary-600);
-  width: 20px;
-}
-
-.btn-secondary {
-  background-color: var(--surface-card);
-  border: 1px solid var(--border);
-  color: var(--text-primary);
-  box-shadow: var(--shadow-sm);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  border-radius: var(--radius-sm);
-  transition: background-color 150ms, border-color 150ms, transform 150ms;
-}
-
-@media (hover: hover) {
-  .btn-secondary:hover {
-    background-color: var(--surface-muted);
-    border-color: var(--border-strong);
-    transform: translateY(-1px);
-  }
-}
-
-.btn-secondary:active {
-  background-color: var(--surface-hover);
-  transform: translateY(0) scale(0.98);
-}
-
-.btn-sm {
-  height: 34px;
-  padding: 0 14px;
-  font-size: 0.875rem;
-}
-
-.pill-tags-wrap {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  padding-top: 14px;
-  border-top: 1px solid var(--border);
-}
-
-.tag-chip {
-  padding: 4px 10px;
-  background-color: var(--surface-muted);
-  border: 1px solid var(--border);
-  color: var(--text-primary);
-  font-size: 0.75rem;
-  font-weight: 600;
-  border-radius: var(--radius-sm);
-  transition: background-color 150ms, transform 150ms;
-  cursor: default;
-}
-
-@media (hover: hover) {
-  .tag-chip:hover {
-    background-color: var(--surface-hover);
-    transform: translateY(-1px);
-  }
-}
-
-/* Mobile Responsive Modal Overrides */
-@media (max-width: 640px) {
-  .modal-overlay {
-    padding: 12px;
-  }
-
-  .modal-dialog {
-    max-height: 92vh;
-    border-radius: var(--radius-lg);
-  }
-
-  .modal-header {
-    padding: 14px 16px;
-  }
-
-  .modal-body {
-    padding: 16px;
-    gap: 16px;
-  }
-
-  .gallery-img-container {
-    height: 220px;
-  }
-
-  .gallery-img-container.is-mobile-container {
-    height: 310px;
-    padding: 10px;
-  }
-
-  .gallery-nav-row {
-    padding: 8px 10px;
-  }
-
-  .btn-sm {
-    height: 36px;
-    padding: 0 12px;
-  }
-}
-
-/* Reduced Motion Override */
-@media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-    scroll-behavior: auto !important;
-  }
-  .reveal-item {
-    opacity: 1 !important;
-    transform: none !important;
-  }
-}
-</style>
