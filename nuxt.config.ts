@@ -16,6 +16,9 @@ export default defineNuxtConfig({
   compatibilityDate: "2025-07-15",
   devtools: { enabled: true },
   modules: ["@nuxtjs/tailwindcss"],
+  tailwindcss: {
+    cssPath: "~/assets/css/main.css",
+  },
 
   runtimeConfig: {
     public: {
@@ -38,20 +41,20 @@ export default defineNuxtConfig({
         lang: "en",
         class: "scroll-smooth",
       },
-      title: "Tito Adhitya Pratama | Front-End Developer",
+      title: "Tito Adhitya Pratama | Front-End & Native Android Engineer",
       meta: [
         { charset: "utf-8" },
         { name: "viewport", content: "width=device-width, initial-scale=1" },
         {
           name: "description",
           content:
-            "Portfolio of Tito Adhitya Pratama, an entry-level Software Engineer specializing in Vue.js, Nuxt, and Android (Kotlin).",
+            "Portfolio of Tito Adhitya Pratama, Front-End and Native Android Engineer based in Jakarta Barat building web applications in Vue.js, Nuxt, and Laravel alongside native Android apps in Kotlin and Jetpack Compose.",
         },
-        { property: "og:title", content: "Tito Adhitya Pratama | Front-End Developer" },
+        { property: "og:title", content: "Tito Adhitya Pratama | Front-End & Native Android Engineer" },
         {
           property: "og:description",
           content:
-            "Explore production web projects, technical capabilities, and hands-on experience built with clean architecture.",
+            "Portfolio of Tito Adhitya Pratama, Front-End and Native Android Engineer based in Jakarta Barat building web applications in Vue.js, Nuxt, and Laravel alongside native Android apps in Kotlin and Jetpack Compose.",
         },
         { property: "og:type", content: "website" },
       ],
@@ -65,13 +68,13 @@ export default defineNuxtConfig({
         },
         {
           rel: "stylesheet",
-          href: "https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap",
+          href: "https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400..700;1,9..40,400..600&family=Fraunces:ital,opsz,wght@0,9..144,400..700;1,9..144,400..600&family=JetBrains+Mono:wght@400;500;600&display=swap",
         },
       ],
       script: [
         {
           tagPosition: "head",
-          innerHTML: `try{var t=localStorage.getItem("theme-preference");if(t==="dark"){document.documentElement.classList.add("dark");document.documentElement.setAttribute("data-theme","dark");}}catch(e){}`,
+          innerHTML: `try{if(localStorage.getItem("tap-motion-paused")==="true"){document.documentElement.classList.add("motion-paused");}}catch(e){}`,
         },
       ],
     },
